@@ -54,13 +54,23 @@ export const LoginForm: React.FC = () => {
       const responseData = await res.json();
 
       if (res.ok) {
+        // 토큰을 쿠키에 저장
+        if (responseData.accessToken) {
+          document.cookie = `accessToken=${responseData.accessToken}; path=/; max-age=86400; secure; samesite=lax`;
+        }
+        if (responseData.refreshToken) {
+          document.cookie = `refreshToken=${responseData.refreshToken}; path=/; max-age=604800; secure; samesite=lax`;
+        }
+
         // 로그인 성공 시 메인 페이지로 리다이렉트
-        router.push("/");
+        router.replace("/");
       } else {
         setError(responseData.error || "로그인에 실패했습니다.");
       }
     } catch (error) {
       setError("네트워크 오류가 발생했습니다.");
+    } finally {
+      setIsLoading(false);
     }
   };
 

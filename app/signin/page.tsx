@@ -3,7 +3,7 @@ import { FormHeader } from "../../components/auth/FormHeader";
 import { FormFooter } from "../../components/auth/FormFooter";
 import { LoginForm } from "../../components/auth/LoginForm";
 
-export default function LoginPage() {
+export default function SignInPage() {
   return (
     <AuthLayout>
       <FormHeader
