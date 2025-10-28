@@ -62,6 +62,14 @@ export async function middleware(request: NextRequest) {
     );
     const isExpired = isTokenExpired(accessToken);
     console.log("accessToken is expired:", isExpired);
+    
+    // 토큰 디코딩해서 만료 시간 확인
+    const decoded = decodeToken(accessToken);
+    if (decoded && decoded.exp) {
+      const currentTime = Math.floor(Date.now() / 1000);
+      const timeLeft = decoded.exp - currentTime;
+      console.log(`토큰 만료까지 남은 시간: ${timeLeft}초`);
+    }
   }
 
   // 보호된 경로들 (인증이 필요한 경로)
@@ -76,7 +84,7 @@ export async function middleware(request: NextRequest) {
   // 현재 경로가 인증 페이지인지 확인
   const isAuthPath = authPaths.includes(pathname);
 
-  // 보호된 경로에 접근하는데 accessToken이 없는 경우
+  // 보호된 경로에 접근하는데 accessToken이 없는 경우만 갱신 시도
   if (isProtectedPath && !accessToken) {
     console.log("accessToken이 없어서 토큰 갱신 시도...");
 
@@ -114,7 +122,7 @@ export async function middleware(request: NextRequest) {
           res.cookies.set("accessToken", data.accessToken, {
             path: "/",
             maxAge: 86400,
-            secure: true,
+            secure: false, // 개발 환경에서는 false
             sameSite: "lax"
           });
 
@@ -123,7 +131,7 @@ export async function middleware(request: NextRequest) {
             res.cookies.set("refreshToken", data.refreshToken, {
               path: "/",
               maxAge: 604800,
-              secure: true,
+              secure: false, // 개발 환경에서는 false
               sameSite: "lax"
             });
           }
@@ -156,6 +164,12 @@ export async function middleware(request: NextRequest) {
     // refreshToken이 없거나 갱신 실패 시 로그인 페이지로
     const loginUrl = new URL("/login", request.url);
     return NextResponse.redirect(loginUrl);
+  }
+
+  // accessToken이 있으면 그냥 통과
+  if (isProtectedPath && accessToken) {
+    console.log("accessToken이 있으므로 통과");
+    return NextResponse.next();
   }
 
   // 이미 로그인한 사용자가 인증 페이지에 접근하는 경우

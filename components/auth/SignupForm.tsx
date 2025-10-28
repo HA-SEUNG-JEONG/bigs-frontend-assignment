@@ -59,8 +59,9 @@ export const SignupForm = () => {
     setSuccess(false);
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://front-mission.bigs.or.kr";
-      
+      const apiUrl =
+        process.env.NEXT_PUBLIC_API_URL || "https://front-mission.bigs.or.kr";
+
       const res = await fetch(`${apiUrl}/auth/signup`, {
         method: "POST",
         headers: {

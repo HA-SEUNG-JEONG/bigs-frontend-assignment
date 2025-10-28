@@ -52,11 +52,24 @@ export const setCookie = (
   value: string,
   maxAge: number
 ): void => {
-  // 개발 환경에서는 secure 옵션을 제거
-  const isDev = process.env.NODE_ENV === 'development';
-  const secureFlag = isDev ? '' : 'secure';
+  // 개발 환경에서는 secure 옵션을 제거하고 httpOnly도 제거
+  const isDev = process.env.NODE_ENV === "development";
   
-  document.cookie = `${name}=${value}; path=/; max-age=${maxAge}; ${secureFlag}; samesite=lax`;
+  let cookieString = `${name}=${value}; path=/; max-age=${maxAge}; samesite=lax`;
+  
+  // 프로덕션 환경에서만 secure 옵션 추가
+  if (!isDev) {
+    cookieString += "; secure";
+  }
+  
+  console.log(`쿠키 설정 시도: ${name}=${value.substring(0, 20)}...`);
+  console.log(`쿠키 문자열: ${cookieString}`);
+  
+  document.cookie = cookieString;
+  
+  // 설정 후 확인
+  const checkValue = getCookie(name);
+  console.log(`쿠키 설정 확인: ${name} = ${checkValue ? '설정됨' : '설정 실패'}`);
 };
 
 /**

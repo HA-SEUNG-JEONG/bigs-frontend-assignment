@@ -43,8 +43,9 @@ export const LoginForm: React.FC = () => {
     setError("");
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://front-mission.bigs.or.kr";
-      
+      const apiUrl =
+        process.env.NEXT_PUBLIC_API_URL || "https://front-mission.bigs.or.kr";
+
       const res = await fetch(`${apiUrl}/auth/signin`, {
         method: "POST",
         headers: {
@@ -54,17 +55,24 @@ export const LoginForm: React.FC = () => {
       });
 
       const responseData = await res.json();
+      console.log("로그인 응답:", responseData);
 
       if (res.ok) {
+        console.log("로그인 성공, 토큰 설정 시작...");
+        
         if (responseData.accessToken) {
+          console.log("accessToken 설정 중...");
           setCookie("accessToken", responseData.accessToken, 86400); // 24시간
         }
         if (responseData.refreshToken) {
+          console.log("refreshToken 설정 중...");
           setCookie("refreshToken", responseData.refreshToken, 604800); // 7일
         }
 
+        console.log("토큰 설정 완료, 메인 페이지로 이동...");
         router.replace("/");
       } else {
+        console.error("로그인 실패:", responseData);
         setError(responseData.error || "로그인에 실패했습니다.");
       }
     } catch (error) {
