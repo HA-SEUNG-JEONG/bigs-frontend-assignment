@@ -31,7 +31,7 @@ export default function HomeClient() {
 
       if (res.ok) {
         const data: BoardListResponse = await res.json();
-        console.log(data, "data");
+
         setBoards(data.content);
         setTotalPages(data.totalPages);
         setCurrentPage(data.number);
