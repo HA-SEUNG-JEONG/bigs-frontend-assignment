@@ -5,6 +5,7 @@ export interface Board {
   createdAt: string;
   imageUrl?: string;
   boardCategory: string;
+  category: string;
 }
 
 export interface BoardListResponse {

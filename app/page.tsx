@@ -205,7 +205,7 @@ export default function Home() {
                               </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {board.boardCategory}
+                              {board.category}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                               {new Date(board.createdAt).toLocaleDateString(

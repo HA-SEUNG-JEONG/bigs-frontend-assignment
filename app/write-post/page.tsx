@@ -6,6 +6,7 @@ import Select from "@/components/ui/Select";
 import React, { useEffect, useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { fetchWithAuth } from "@/lib/utils/auth";
+import { useRouter } from "next/navigation";
 
 type PostFormData = {
   title: string;
@@ -14,6 +15,7 @@ type PostFormData = {
 };
 
 const page = () => {
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -25,29 +27,40 @@ const page = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const onSubmit: SubmitHandler<PostFormData> = async (data) => {
-    // FormData 객체 생성
-    const formData = new FormData();
+    try {
+      // FormData 객체 생성
+      const formData = new FormData();
 
-    // JSON 데이터를 Blob으로 변환하여 request 필드에 추가
-    const requestBlob = new Blob([JSON.stringify(data)], {
-      type: "application/json"
-    });
-    formData.append("request", requestBlob);
+      // JSON 데이터를 Blob으로 변환하여 request 필드에 추가
+      const requestBlob = new Blob([JSON.stringify(data)], {
+        type: "application/json"
+      });
+      formData.append("request", requestBlob);
 
-    // 파일이 있으면 file 필드에 추가
-    if (selectedFile) {
-      formData.append("file", selectedFile);
-    }
-
-    const res = await fetchWithAuth(
-      `${process.env.NEXT_PUBLIC_API_URL}/boards`,
-      {
-        method: "POST",
-        body: formData
+      // 파일이 있으면 file 필드에 추가
+      if (selectedFile) {
+        formData.append("file", selectedFile);
       }
-    );
 
-    console.log(res, "result");
+      const res = await fetchWithAuth(
+        `${process.env.NEXT_PUBLIC_API_URL}/boards`,
+        {
+          method: "POST",
+          body: formData
+        }
+      );
+
+      if (res.ok) {
+        // 글 작성 성공 시 메인 페이지로 리다이렉트
+        router.push("/");
+      } else {
+        console.error("글 작성 실패:", res.status);
+        alert("글 작성에 실패했습니다. 다시 시도해주세요.");
+      }
+    } catch (error) {
+      console.error("글 작성 중 오류:", error);
+      alert("글 작성 중 오류가 발생했습니다. 다시 시도해주세요.");
+    }
   };
 
   // 카테고리 불러오기
