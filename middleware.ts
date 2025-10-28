@@ -55,7 +55,7 @@ export async function middleware(request: NextRequest) {
   const protectedPaths = ["/"];
 
   // 인증이 필요 없는 경로들 (이미 로그인한 사용자는 리다이렉트)
-  const authPaths = ["/login", "/signup"];
+  const authPaths = ["/signIn", "/signup"];
 
   // 현재 경로가 보호된 경로인지 확인
   const isProtectedPath = protectedPaths.includes(pathname);
@@ -111,7 +111,7 @@ export async function middleware(request: NextRequest) {
         } else {
           // refreshToken이 만료된 경우 쿠키 삭제
           if (response.status === 401) {
-            const res = NextResponse.redirect(new URL("/login", request.url));
+            const res = NextResponse.redirect(new URL("/signin", request.url));
             res.cookies.delete("accessToken");
             res.cookies.delete("refreshToken");
             return res;
@@ -119,7 +119,7 @@ export async function middleware(request: NextRequest) {
         }
       } catch (error) {
         // 네트워크 에러인 경우 쿠키 삭제 후 로그인 페이지로
-        const res = NextResponse.redirect(new URL("/login", request.url));
+        const res = NextResponse.redirect(new URL("/signin", request.url));
         res.cookies.delete("accessToken");
         res.cookies.delete("refreshToken");
         return res;
@@ -127,8 +127,8 @@ export async function middleware(request: NextRequest) {
     }
 
     // refreshToken이 없거나 갱신 실패 시 로그인 페이지로
-    const loginUrl = new URL("/login", request.url);
-    return NextResponse.redirect(loginUrl);
+    const signInUrl = new URL("/signin", request.url);
+    return NextResponse.redirect(signInUrl);
   }
 
   // 이미 로그인한 사용자가 인증 페이지에 접근하는 경우

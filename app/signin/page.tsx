@@ -1,7 +1,7 @@
 import { AuthLayout } from "../../components/layout/AuthLayout";
 import { FormHeader } from "../../components/auth/FormHeader";
 import { FormFooter } from "../../components/auth/FormFooter";
-import { LoginForm } from "../../components/auth/LoginForm";
+import { SignInForm } from "../../components/auth/SignInForm";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -31,7 +31,7 @@ export default function SignInPage() {
         }
       />
 
-      <LoginForm />
+      <SignInForm />
 
       <FormFooter
         text="계정이 없으신가요?"
