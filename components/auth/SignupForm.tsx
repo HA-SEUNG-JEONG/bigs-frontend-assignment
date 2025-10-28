@@ -12,9 +12,9 @@ import { Alert } from "../ui/Alert";
 const signupSchema = z
   .object({
     username: z
-      .string()
-      .min(1, "이메일을 입력해주세요")
-      .email("올바른 이메일 형식을 입력해주세요"),
+      .email("올바른 이메일 형식을 입력해주세요")
+      .min(1, "이메일을 입력해주세요"),
+
     name: z
       .string()
       .min(1, "이름을 입력해주세요")
@@ -119,7 +119,7 @@ export const SignupForm = () => {
         type={showPassword ? "text" : "password"}
         id="password"
         label="비밀번호"
-        placeholder="최소 8자, 영문/숫자/특수문자 포함"
+        placeholder="최소 8자 이상, 숫자, 영문자, 특수문자(!%*#?&) 1개 이상의 조합"
         error={errors.password?.message}
         showPasswordToggle
         isPasswordVisible={showPassword}

@@ -9,8 +9,7 @@ export async function POST(request: NextRequest) {
     // 외부 API로 로그아웃 요청 (선택사항 - 서버에서 세션 무효화)
     if (accessToken) {
       try {
-        const externalApiUrl =
-          process.env.NEXT_PUBLIC_API_URL || "https://front-mission.bigs.or.kr";
+        const externalApiUrl = process.env.NEXT_PUBLIC_API_URL;
 
         // 외부 API로 로그아웃 요청 (토큰 무효화)
         await fetch(`${externalApiUrl}/auth/logout`, {

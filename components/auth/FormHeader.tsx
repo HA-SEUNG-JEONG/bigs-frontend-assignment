@@ -6,11 +6,7 @@ interface FormHeaderProps {
   icon?: React.ReactNode;
 }
 
-export const FormHeader: React.FC<FormHeaderProps> = ({
-  title,
-  subtitle,
-  icon
-}) => {
+export const FormHeader = ({ title, subtitle, icon }: FormHeaderProps) => {
   return (
     <div className="text-center">
       <div className="mx-auto h-12 w-12 bg-indigo-100 rounded-full flex items-center justify-center mb-4">

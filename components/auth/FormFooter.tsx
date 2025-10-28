@@ -7,11 +7,7 @@ interface FormFooterProps {
   linkHref: string;
 }
 
-export const FormFooter: React.FC<FormFooterProps> = ({
-  text,
-  linkText,
-  linkHref
-}) => {
+export const FormFooter = ({ text, linkText, linkHref }: FormFooterProps) => {
   return (
     <div className="text-center">
       <p className="text-sm text-gray-600">
