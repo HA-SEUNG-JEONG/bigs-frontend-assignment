@@ -8,10 +8,6 @@ import { useToast } from "@/components/ui/ToastProvider";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 
 export default function HomeClient() {
-  const [userInfo, setUserInfo] = useState<{
-    name?: string;
-    username?: string;
-  } | null>(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [boards, setBoards] = useState<Board[]>([]);
@@ -77,8 +73,6 @@ export default function HomeClient() {
       });
 
       if (res.ok) {
-        setUserInfo(null);
-
         addToast({
           message: "성공적으로 로그아웃되었습니다.",
           type: "success"
@@ -90,14 +84,12 @@ export default function HomeClient() {
           message: "로그아웃 중 오류가 발생했습니다.",
           type: "error"
         });
-        router.replace("/login");
       }
     } catch (error) {
       addToast({
         message: "로그아웃 중 오류가 발생했습니다.",
         type: "error"
       });
-      router.replace("/login");
     } finally {
       setIsLoggingOut(false);
     }
@@ -117,13 +109,6 @@ export default function HomeClient() {
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <div className="text-sm text-gray-700">
-                안녕하세요,{" "}
-                <span className="font-medium">
-                  {userInfo?.name || userInfo?.username}
-                </span>
-                님
-              </div>
               <button
                 onClick={handleLogoutClick}
                 disabled={isLoggingOut}
@@ -142,35 +127,6 @@ export default function HomeClient() {
           <div className="bg-white rounded-lg shadow p-6">
             {/* 환영 메시지 */}
             <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4 mb-6"></div>
-
-            {/* 사용자 정보 카드 */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  사용자 정보
-                </h3>
-                <div className="space-y-2">
-                  <div>
-                    <span className="text-sm font-medium text-gray-500">
-                      이름:
-                    </span>
-                    <span className="ml-2 text-sm text-gray-900">
-                      {userInfo?.name || "정보 없음"}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-sm font-medium text-gray-500">
-                      이메일:
-                    </span>
-                    <span className="ml-2 text-sm text-gray-900">
-                      {userInfo?.username || "정보 없음"}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-gray-50 rounded-lg p-4"></div>
-            </div>
 
             {/* 게시글 목록 */}
             <div className="mt-8">
