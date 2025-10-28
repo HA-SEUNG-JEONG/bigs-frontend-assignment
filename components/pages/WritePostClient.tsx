@@ -3,10 +3,13 @@
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import Select from "@/components/ui/Select";
-import React, { useEffect, useState } from "react";
+import { Textarea } from "@/components/ui/Textarea";
+import { FileUpload } from "@/components/ui/FileUpload";
+import React, { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { fetchWithAuth } from "@/lib/utils/auth";
 import { useRouter } from "next/navigation";
+import { useCategories } from "@/hooks/useCategories";
 
 type PostFormData = {
   title: string;
@@ -16,15 +19,14 @@ type PostFormData = {
 
 export default function WritePostClient() {
   const router = useRouter();
+  const { categories, isLoading: isLoadingCategories } = useCategories();
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting }
   } = useForm<PostFormData>();
-  const [categories, setCategories] = useState<
-    { value: string; label: string }[]
-  >([]);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const onSubmit: SubmitHandler<PostFormData> = async (data) => {
     try {
@@ -56,121 +58,80 @@ export default function WritePostClient() {
     }
   };
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await fetch("/api/boards/categories");
-
-        if (res.ok) {
-          const data = await res.json();
-
-          const categoryOptions = Object.entries(data).map(([key, value]) => ({
-            value: key,
-            label: value as string
-          }));
-
-          setCategories(categoryOptions);
-        } else {
-          console.error("카테고리 조회 실패:", res.status);
-        }
-      } catch (error) {
-        console.error("카테고리 조회 중 오류:", error);
-      }
-    };
-    fetchCategories();
-  }, []);
-
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="space-y-5 max-w-2xl mx-auto p-4"
-    >
-      <Input
-        className="w-full p-4 text-lg font-medium border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
-        label="제목"
-        placeholder="제목을 입력해주세요"
-        error={errors.title?.message}
-        {...register("title", {
-          required: "제목을 입력해주세요",
-          minLength: {
-            value: 2,
-            message: "제목은 2자 이상 입력해주세요"
-          },
-          maxLength: {
-            value: 100,
-            message: "제목은 100자 이하로 입력해주세요"
-          }
-        })}
-      />
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          내용
-        </label>
-        <textarea
-          className={`w-full h-40 p-4 text-border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors ${
-            errors.content ? "border-red-300 bg-red-50" : "border-gray-300"
-          }`}
-          placeholder="내용을 입력해주세요"
-          rows={10}
-          {...register("content", {
-            required: "내용을 입력해주세요",
-            minLength: {
-              value: 10,
-              message: "내용은 10자 이상 입력해주세요"
-            }
-          })}
-        />
-        {errors.content && (
-          <p className="mt-1 text-sm text-red-600 flex items-center">
-            <svg
-              className="w-4 h-4 mr-1"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fillRule="evenodd"
-                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                clipRule="evenodd"
-              />
-            </svg>
-            {errors.content.message}
-          </p>
-        )}
-      </div>
-      <Select
-        label="카테고리"
-        options={categories}
-        error={errors.category?.message}
-        {...register("category", {
-          required: "카테고리를 선택해주세요"
-        })}
-      />
+    <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="max-w-2xl mx-auto py-6 px-4">
+        <header className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900">글 작성</h1>
+        </header>
 
-      {/* 파일 업로드 */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          이미지 (선택사항)
-        </label>
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
-        />
-        {selectedFile && (
-          <p className="mt-1 text-sm text-gray-600">
-            선택된 파일: {selectedFile.name}
-          </p>
-        )}
-      </div>
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="space-y-5 bg-white rounded-lg shadow p-6"
+        >
+          <fieldset className="space-y-5">
+            <legend className="sr-only">게시글 작성 폼</legend>
 
-      <Button
-        isLoading={isSubmitting}
-        type="submit"
-        className="w-full py-4 text-lg font-medium"
-      >
-        {isSubmitting ? "저장 중..." : "저장"}
-      </Button>
-    </form>
+            <Input
+              className="w-full p-4 text-lg font-medium border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+              label="제목"
+              placeholder="제목을 입력해주세요"
+              error={errors.title?.message}
+              {...register("title", {
+                required: "제목을 입력해주세요",
+                minLength: {
+                  value: 2,
+                  message: "제목은 2자 이상 입력해주세요"
+                },
+                maxLength: {
+                  value: 100,
+                  message: "제목은 100자 이하로 입력해주세요"
+                }
+              })}
+            />
+
+            <Textarea
+              label="내용"
+              placeholder="내용을 입력해주세요"
+              rows={10}
+              error={errors.content?.message}
+              {...register("content", {
+                required: "내용을 입력해주세요",
+                minLength: {
+                  value: 10,
+                  message: "내용은 10자 이상 입력해주세요"
+                }
+              })}
+            />
+
+            <Select
+              label="카테고리"
+              options={categories}
+              error={errors.category?.message}
+              disabled={isLoadingCategories}
+              {...register("category", {
+                required: "카테고리를 선택해주세요"
+              })}
+            />
+
+            <FileUpload
+              label="이미지 (선택사항)"
+              accept="image/*"
+              selectedFile={selectedFile}
+              onFileChange={setSelectedFile}
+            />
+          </fieldset>
+
+          <Button
+            isLoading={isSubmitting}
+            type="submit"
+            className="w-full py-4 text-lg font-medium"
+            disabled={isLoadingCategories}
+          >
+            {isSubmitting ? "저장 중..." : "저장"}
+          </Button>
+        </form>
+      </div>
+    </main>
   );
 }
