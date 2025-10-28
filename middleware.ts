@@ -4,11 +4,10 @@ import type { NextRequest } from "next/server";
 /**
  * JWT 토큰을 디코딩하여 payload를 반환합니다. (서버 사이드용)
  */
-const decodeToken = (token: string): any => {
+const decodeToken = (token: string) => {
   try {
     const parts = token.split(".");
     if (parts.length !== 3) {
-      console.error("Invalid JWT token format");
       return null;
     }
 
@@ -21,7 +20,6 @@ const decodeToken = (token: string): any => {
     const jsonPayload = Buffer.from(padded, "base64").toString("utf8");
     return JSON.parse(jsonPayload);
   } catch (error) {
-    console.error("토큰 디코딩 실패:", error);
     return null;
   }
 };
@@ -49,28 +47,9 @@ export async function middleware(request: NextRequest) {
   const accessToken = request.cookies.get("accessToken")?.value;
   const refreshToken = request.cookies.get("refreshToken")?.value;
 
-  console.log("=== Middleware Debug ===");
-  console.log("pathname:", pathname);
-  console.log("accessToken exists:", !!accessToken);
-  console.log("refreshToken exists:", !!refreshToken);
-  console.log("NEXT_PUBLIC_API_URL:", process.env.NEXT_PUBLIC_API_URL);
-
-  if (accessToken) {
-    console.log(
-      "accessToken (first 20 chars):",
-      accessToken.substring(0, 20) + "..."
-    );
-    const isExpired = isTokenExpired(accessToken);
-    console.log("accessToken is expired:", isExpired);
-    
-    // 토큰 디코딩해서 만료 시간 확인
-    const decoded = decodeToken(accessToken);
-    if (decoded && decoded.exp) {
-      const currentTime = Math.floor(Date.now() / 1000);
-      const timeLeft = decoded.exp - currentTime;
-      console.log(`토큰 만료까지 남은 시간: ${timeLeft}초`);
-    }
-  }
+  // 토큰이 만료되었는지 확인 (갱신 시도 여부 결정용)
+  const isTokenInvalid =
+    !accessToken || (accessToken && isTokenExpired(accessToken));
 
   // 보호된 경로들 (인증이 필요한 경로)
   const protectedPaths = ["/"];
@@ -84,19 +63,13 @@ export async function middleware(request: NextRequest) {
   // 현재 경로가 인증 페이지인지 확인
   const isAuthPath = authPaths.includes(pathname);
 
-  // 보호된 경로에 접근하는데 accessToken이 없는 경우만 갱신 시도
-  if (isProtectedPath && !accessToken) {
-    console.log("accessToken이 없어서 토큰 갱신 시도...");
-
+  // 보호된 경로에 접근하는데 토큰이 없거나 만료된 경우 갱신 시도
+  if (isProtectedPath && isTokenInvalid) {
     // refreshToken이 있으면 토큰 갱신 시도
     if (refreshToken) {
       try {
-        console.log("토큰 갱신 시도...");
-        console.log("refreshToken:", refreshToken);
-
         const apiUrl =
           process.env.NEXT_PUBLIC_API_URL || "https://front-mission.bigs.or.kr";
-        console.log("API URL:", apiUrl);
 
         const response = await fetch(`${apiUrl}/auth/refresh`, {
           method: "POST",
@@ -108,12 +81,8 @@ export async function middleware(request: NextRequest) {
           signal: AbortSignal.timeout(10000)
         });
 
-        console.log("response status:", response.status);
-        console.log("response ok:", response.ok);
-
         if (response.ok) {
           const data = await response.json();
-          console.log("갱신 성공, 새 토큰 설정");
 
           // 새로운 토큰으로 응답 생성
           const res = NextResponse.next();
@@ -123,7 +92,8 @@ export async function middleware(request: NextRequest) {
             path: "/",
             maxAge: 86400,
             secure: false, // 개발 환경에서는 false
-            sameSite: "lax"
+            sameSite: "lax",
+            httpOnly: true
           });
 
           // 새 refreshToken 설정 (7일)
@@ -132,14 +102,13 @@ export async function middleware(request: NextRequest) {
               path: "/",
               maxAge: 604800,
               secure: false, // 개발 환경에서는 false
-              sameSite: "lax"
+              sameSite: "lax",
+              httpOnly: true
             });
           }
 
           return res;
         } else {
-          console.log("갱신 실패:", response.status);
-
           // refreshToken이 만료된 경우 쿠키 삭제
           if (response.status === 401) {
             const res = NextResponse.redirect(new URL("/login", request.url));
@@ -149,16 +118,12 @@ export async function middleware(request: NextRequest) {
           }
         }
       } catch (error) {
-        console.error("토큰 갱신 실패:", error);
-
         // 네트워크 에러인 경우 쿠키 삭제 후 로그인 페이지로
         const res = NextResponse.redirect(new URL("/login", request.url));
         res.cookies.delete("accessToken");
         res.cookies.delete("refreshToken");
         return res;
       }
-    } else {
-      console.log("refreshToken이 없어서 로그인 페이지로 리다이렉트");
     }
 
     // refreshToken이 없거나 갱신 실패 시 로그인 페이지로
@@ -166,9 +131,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // accessToken이 있으면 그냥 통과
-  if (isProtectedPath && accessToken) {
-    console.log("accessToken이 있으므로 통과");
+  // accessToken이 있고 유효하면 그냥 통과
+  if (isProtectedPath && accessToken && !isTokenExpired(accessToken)) {
     return NextResponse.next();
   }
 
