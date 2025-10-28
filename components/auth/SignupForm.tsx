@@ -59,10 +59,8 @@ export const SignupForm = () => {
     setSuccess(false);
 
     try {
-      const apiUrl =
-        process.env.NEXT_PUBLIC_API_URL || "https://front-mission.bigs.or.kr";
-
-      const res = await fetch(`${apiUrl}/auth/signup`, {
+      // 내부 API Route로 회원가입 요청
+      const res = await fetch("/api/auth/signup", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -71,16 +69,23 @@ export const SignupForm = () => {
       });
 
       if (res.ok) {
+        const responseData = await res.json();
         setSuccess(true);
+
+        // 회원가입 성공 시 토큰이 함께 온 경우 메인 페이지로 이동
+        // 토큰이 없는 경우 로그인 페이지로 이동
         setTimeout(() => {
-          router.push("/login");
+          if (responseData.accessToken) {
+            router.push("/");
+          } else {
+            router.push("/login");
+          }
         }, 2000);
       } else {
         const errorData = await res.json();
         setError(errorData.error || "회원가입에 실패했습니다.");
       }
     } catch (error) {
-      console.error("회원가입 오류:", error);
       setError("네트워크 오류가 발생했습니다");
     } finally {
       setIsLoading(false);
@@ -142,7 +147,7 @@ export const SignupForm = () => {
       {success && (
         <Alert
           type="success"
-          message="회원가입이 완료되었습니다! 잠시 후 로그인 페이지로 이동합니다."
+          message="회원가입이 완료되었습니다! 잠시 후 이동합니다."
         />
       )}
 
