@@ -8,12 +8,14 @@ export const setAuthCookies = (
   accessToken: string,
   refreshToken?: string
 ): NextResponse => {
+  const isProduction = process.env.NODE_ENV === "production";
+
   // accessToken 쿠키 설정 (24시간)
   response.cookies.set("accessToken", accessToken, {
     path: "/",
     maxAge: 86400, // 24시간
-    secure: false, // 개발 환경에서는 false
-    sameSite: "lax",
+    secure: isProduction, // 프로덕션에서는 true, 개발에서는 false
+    sameSite: isProduction ? "strict" : "lax",
     httpOnly: true // XSS 공격 방지
   });
 
@@ -22,8 +24,8 @@ export const setAuthCookies = (
     response.cookies.set("refreshToken", refreshToken, {
       path: "/",
       maxAge: 604800, // 7일
-      secure: false, // 개발 환경에서는 false
-      sameSite: "lax",
+      secure: isProduction, // 프로덕션에서는 true, 개발에서는 false
+      sameSite: isProduction ? "strict" : "lax",
       httpOnly: true // XSS 공격 방지
     });
   }
