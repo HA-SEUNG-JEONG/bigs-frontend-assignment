@@ -1,22 +1,19 @@
-import React from "react";
+import React, { useState } from "react";
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string;
   error?: string;
-  showPasswordToggle?: boolean;
-  isPasswordVisible?: boolean;
-  onTogglePassword?: () => void;
 }
 
 export const Input: React.FC<InputProps> = ({
   label,
   error,
-  showPasswordToggle = false,
-  isPasswordVisible = false,
-  onTogglePassword,
   className = "",
   ...props
 }) => {
+  const [showPassword, setShowPassword] = useState(false);
+  const isPasswordField = props.type === "password";
+  const inputType = isPasswordField && showPassword ? "text" : props.type;
   return (
     <div>
       <label
@@ -28,17 +25,20 @@ export const Input: React.FC<InputProps> = ({
       <div className="relative">
         <input
           {...props}
-          className={`w-full px-4 py-3 pr-12 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors ${
+          type={inputType}
+          className={`w-full px-4 py-3 ${
+            isPasswordField ? "pr-12" : "pr-4"
+          } border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors ${
             error ? "border-red-300 bg-red-50" : "border-gray-300"
           } ${className}`}
         />
-        {showPasswordToggle && (
+        {isPasswordField && (
           <button
             type="button"
-            onClick={onTogglePassword}
+            onClick={() => setShowPassword(!showPassword)}
             className="absolute inset-y-0 right-0 pr-3 flex items-center"
           >
-            {isPasswordVisible ? (
+            {showPassword ? (
               <svg
                 className="h-5 w-5 text-gray-400"
                 fill="none"

@@ -18,7 +18,7 @@ export default function SignupPage() {
       <FormFooter
         text="이미 계정이 있으신가요?"
         linkText="로그인"
-        linkHref="/login"
+        linkHref="/signin"
       />
     </AuthLayout>
   );

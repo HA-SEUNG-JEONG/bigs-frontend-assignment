@@ -21,7 +21,6 @@ type SigninFormData = z.infer<typeof signinSchema>;
 export const SignInForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
   const {
@@ -75,14 +74,11 @@ export const SignInForm = () => {
       {/* 비밀번호 필드 */}
       <Input
         {...register("password")}
-        type={showPassword ? "text" : "password"}
+        type="password"
         id="password"
         label="비밀번호"
         placeholder="비밀번호를 입력하세요"
         error={errors.password?.message}
-        showPasswordToggle
-        isPasswordVisible={showPassword}
-        onTogglePassword={() => setShowPassword(!showPassword)}
       />
 
       {/* 에러 메시지 */}

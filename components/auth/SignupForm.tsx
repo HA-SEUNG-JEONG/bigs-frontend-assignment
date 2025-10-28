@@ -39,8 +39,6 @@ export const SignupForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const router = useRouter();
 
   const {
@@ -77,7 +75,7 @@ export const SignupForm = () => {
           if (responseData.accessToken) {
             router.push("/");
           } else {
-            router.push("/login");
+            router.push("/signin");
           }
         }, 2000);
       } else {
@@ -116,27 +114,21 @@ export const SignupForm = () => {
       {/* 비밀번호 필드 */}
       <Input
         {...register("password")}
-        type={showPassword ? "text" : "password"}
+        type="password"
         id="password"
         label="비밀번호"
         placeholder="최소 8자 이상, 숫자, 영문자, 특수문자(!%*#?&) 1개 이상의 조합"
         error={errors.password?.message}
-        showPasswordToggle
-        isPasswordVisible={showPassword}
-        onTogglePassword={() => setShowPassword(!showPassword)}
       />
 
       {/* 비밀번호 확인 필드 */}
       <Input
         {...register("confirmPassword")}
-        type={showConfirmPassword ? "text" : "password"}
+        type="password"
         id="confirmPassword"
         label="비밀번호 확인"
         placeholder="비밀번호를 다시 입력하세요"
         error={errors.confirmPassword?.message}
-        showPasswordToggle
-        isPasswordVisible={showConfirmPassword}
-        onTogglePassword={() => setShowConfirmPassword(!showConfirmPassword)}
       />
 
       {/* 에러 메시지 */}

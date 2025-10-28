@@ -32,7 +32,7 @@ export default function HomeClient() {
       } else {
         // 401 에러인 경우 로그인 페이지로 리다이렉트
         if (res.status === 401) {
-          router.replace("/login");
+          router.replace("/signin");
         }
       }
     } catch (error) {
@@ -78,7 +78,7 @@ export default function HomeClient() {
           type: "success"
         });
 
-        router.replace("/login");
+        router.replace("/signin");
       } else {
         addToast({
           message: "로그아웃 중 오류가 발생했습니다.",
