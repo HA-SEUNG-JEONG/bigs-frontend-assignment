@@ -9,7 +9,6 @@ import { Input } from "../ui/Input";
 import { Button } from "../ui/Button";
 import { Alert } from "../ui/Alert";
 
-// 로그인 유효성 검사 스키마
 const signinSchema = z.object({
   username: z
     .string()
@@ -54,7 +53,6 @@ export const LoginForm: React.FC = () => {
       const responseData = await res.json();
 
       if (res.ok) {
-        // 토큰을 쿠키에 저장
         if (responseData.accessToken) {
           document.cookie = `accessToken=${responseData.accessToken}; path=/; max-age=86400; secure; samesite=lax`;
         }
@@ -62,7 +60,6 @@ export const LoginForm: React.FC = () => {
           document.cookie = `refreshToken=${responseData.refreshToken}; path=/; max-age=604800; secure; samesite=lax`;
         }
 
-        // 로그인 성공 시 메인 페이지로 리다이렉트
         router.replace("/");
       } else {
         setError(responseData.error || "로그인에 실패했습니다.");

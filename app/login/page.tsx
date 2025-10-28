@@ -2,6 +2,11 @@ import { AuthLayout } from "../../components/layout/AuthLayout";
 import { FormHeader } from "../../components/auth/FormHeader";
 import { FormFooter } from "../../components/auth/FormFooter";
 import { LoginForm } from "../../components/auth/LoginForm";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "로그인 | 빅스페이먼츠"
+};
 
 export default function SignInPage() {
   return (

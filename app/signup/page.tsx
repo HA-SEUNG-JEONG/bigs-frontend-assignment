@@ -2,6 +2,11 @@ import { AuthLayout } from "../../components/layout/AuthLayout";
 import { FormHeader } from "../../components/auth/FormHeader";
 import { FormFooter } from "../../components/auth/FormFooter";
 import { SignupForm } from "../../components/auth/SignupForm";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "회원가입 | 빅스페이먼츠"
+};
 
 export default function SignupPage() {
   return (

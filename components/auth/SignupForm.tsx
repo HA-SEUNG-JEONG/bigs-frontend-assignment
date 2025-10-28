@@ -9,7 +9,6 @@ import { Input } from "../ui/Input";
 import { Button } from "../ui/Button";
 import { Alert } from "../ui/Alert";
 
-// 유효성 검사 스키마
 const signupSchema = z
   .object({
     username: z
@@ -69,7 +68,6 @@ export const SignupForm = () => {
       });
 
       if (res.ok) {
-        // 성공 시: 빈 응답이므로 성공 메시지 설정 후 로그인 페이지로 이동
         router.push("/login");
       }
     } catch (error) {
