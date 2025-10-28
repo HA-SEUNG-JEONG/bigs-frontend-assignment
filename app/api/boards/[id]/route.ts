@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // 쿠키에서 accessToken 가져오기
@@ -15,7 +15,7 @@ export async function GET(
       );
     }
 
-    const boardId = params.id;
+    const { id: boardId } = await params;
 
     // 외부 API로 게시글 상세 조회 요청
     const externalApiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -56,7 +56,7 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // 쿠키에서 accessToken 가져오기
@@ -70,7 +70,7 @@ export async function PATCH(
       );
     }
 
-    const boardId = params.id;
+    const { id: boardId } = await params;
 
     const formData = await request.formData();
 
@@ -129,7 +129,7 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // 쿠키에서 accessToken 가져오기
@@ -142,7 +142,7 @@ export async function DELETE(
       );
     }
 
-    const boardId = params.id;
+    const { id: boardId } = await params;
 
     // 외부 API로 게시글 삭제 요청
     const externalApiUrl = process.env.NEXT_PUBLIC_API_URL;
