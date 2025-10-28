@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/Button";
+import { fetchWithAuth } from "@/lib/utils/auth";
+import { Board, BoardListResponse } from "@/lib/types/board";
 
 export default function Home() {
   const [userInfo, setUserInfo] = useState<{
@@ -9,7 +12,52 @@ export default function Home() {
     username?: string;
   } | null>(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [boards, setBoards] = useState<Board[]>([]);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+
+  // 게시글 목록 조회
+  const fetchBoards = async (page: number = 0) => {
+    try {
+      setIsLoading(true);
+      const res = await fetchWithAuth(
+        `${process.env.NEXT_PUBLIC_API_URL}/boards?page=${page}&size=10`
+      );
+
+      if (res.ok) {
+        const data: BoardListResponse = await res.json();
+        console.log(data, "data");
+        setBoards(data.content);
+        setTotalPages(data.totalPages);
+        setCurrentPage(data.number);
+      } else {
+        console.error("게시글 목록 조회 실패:", res.status);
+      }
+    } catch (error) {
+      console.error("게시글 목록 조회 중 오류:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 페이지 변경 핸들러
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 0 && newPage < totalPages) {
+      fetchBoards(newPage);
+    }
+  };
+
+  // 게시글 클릭 핸들러
+  const handleBoardClick = (boardId: number) => {
+    router.push(`/boards/${boardId}`);
+  };
+
+  // 컴포넌트 마운트 시 게시글 목록 조회
+  useEffect(() => {
+    fetchBoards();
+  }, []);
 
   // 로그아웃 핸들러
   const handleLogout = () => {
@@ -103,8 +151,100 @@ export default function Home() {
               <div className="bg-gray-50 rounded-lg p-4"></div>
             </div>
 
-            {/* 기능 카드들 */}
-            <div className="mt-8"></div>
+            {/* 게시글 목록 */}
+            <div className="mt-8">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold text-gray-900">
+                  게시글 목록
+                </h2>
+                <Button
+                  className="px-4 py-2 text-sm font-medium"
+                  variant="secondary"
+                  onClick={() => router.push("/write-post")}
+                >
+                  글 작성하기
+                </Button>
+              </div>
+
+              {isLoading ? (
+                <div className="text-center py-8">
+                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                  <p className="mt-2 text-gray-600">로딩 중...</p>
+                </div>
+              ) : boards.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-600">게시글이 없습니다.</p>
+                </div>
+              ) : (
+                <>
+                  <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            제목
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            카테고리
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            작성일
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {boards.map((board) => (
+                          <tr
+                            key={board.id}
+                            className="hover:bg-gray-50 cursor-pointer"
+                            onClick={() => handleBoardClick(board.id)}
+                          >
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm font-medium text-gray-900">
+                                {board.title}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {board.boardCategory}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {new Date(board.createdAt).toLocaleDateString(
+                                "ko-KR"
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* 페이지네이션 */}
+                  {totalPages > 1 && (
+                    <div className="flex justify-center items-center mt-6 space-x-2">
+                      <Button
+                        variant="secondary"
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 0}
+                        className="px-3 py-1 text-sm"
+                      >
+                        이전
+                      </Button>
+                      <span className="text-sm text-gray-600">
+                        {currentPage + 1} / {totalPages}
+                      </span>
+                      <Button
+                        variant="secondary"
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages - 1}
+                        className="px-3 py-1 text-sm"
+                      >
+                        다음
+                      </Button>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
           </div>
         </div>
       </main>
