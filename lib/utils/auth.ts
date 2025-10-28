@@ -13,7 +13,6 @@ export const decodeToken = (token: string): any => {
     );
     return JSON.parse(jsonPayload);
   } catch (error) {
-    console.error("토큰 디코딩 실패:", error);
     return null;
   }
 };
@@ -54,22 +53,12 @@ export const setCookie = (
 ): void => {
   // 개발 환경에서는 secure 옵션을 제거하고 httpOnly도 제거
   const isDev = process.env.NODE_ENV === "development";
-  
   let cookieString = `${name}=${value}; path=/; max-age=${maxAge}; samesite=lax`;
-  
   // 프로덕션 환경에서만 secure 옵션 추가
   if (!isDev) {
     cookieString += "; secure";
   }
-  
-  console.log(`쿠키 설정 시도: ${name}=${value.substring(0, 20)}...`);
-  console.log(`쿠키 문자열: ${cookieString}`);
-  
   document.cookie = cookieString;
-  
-  // 설정 후 확인
-  const checkValue = getCookie(name);
-  console.log(`쿠키 설정 확인: ${name} = ${checkValue ? '설정됨' : '설정 실패'}`);
 };
 
 /**
@@ -131,17 +120,8 @@ export const refreshAccessToken = async (): Promise<string> => {
 
     return data.accessToken;
   } catch (error) {
-    console.error("토큰 갱신 중 오류 발생:", error);
-
-    // 네트워크 에러인지 확인
-    if (error instanceof Error) {
-      if (error.name === "AbortError") {
-        throw new Error("토큰 갱신 요청이 시간 초과되었습니다.");
-      }
-      throw error;
-    }
-
-    throw new Error("토큰 갱신 중 알 수 없는 오류가 발생했습니다.");
+    // 토큰 갱신 중 오류 발생
+    throw error;
   }
 };
 
@@ -161,8 +141,6 @@ export const fetchWithAuth = async (
 
   // 토큰 만료 검증 (사전 검증)
   if (isTokenExpired(accessToken)) {
-    console.log("토큰이 만료되었습니다. 사전에 토큰을 갱신합니다...");
-
     try {
       const newAccessToken = await refreshAccessToken();
 
@@ -185,7 +163,7 @@ export const fetchWithAuth = async (
 
       return await fetch(url, requestOptions);
     } catch (refreshError) {
-      console.error("사전 토큰 갱신 실패:", refreshError);
+      // 사전 토큰 갱신 실패
 
       // 토큰 갱신 실패 시 로그인 페이지로 리다이렉트
       if (typeof window !== "undefined") {
@@ -224,8 +202,6 @@ export const fetchWithAuth = async (
 
     // 401 에러가 발생한 경우 토큰 갱신 시도 (백업 로직)
     if (response.status === 401) {
-      console.log("401 에러 발생. 토큰을 갱신합니다...");
-
       try {
         // 토큰 갱신
         const newAccessToken = await refreshAccessToken();
@@ -241,7 +217,7 @@ export const fetchWithAuth = async (
 
         return await fetch(url, retryOptions);
       } catch (refreshError) {
-        console.error("토큰 갱신 실패:", refreshError);
+        // 토큰 갱신 실패
 
         // 토큰 갱신 실패 시 로그인 페이지로 리다이렉트
         if (typeof window !== "undefined") {
@@ -261,7 +237,7 @@ export const fetchWithAuth = async (
 
     return response;
   } catch (error) {
-    console.error("API 요청 중 오류 발생:", error);
+    // API 요청 중 오류 발생
     throw error;
   }
 };
