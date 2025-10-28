@@ -6,18 +6,22 @@ import type { NextRequest } from "next/server";
  */
 const decodeToken = (token: string): any => {
   try {
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(
-      Buffer.from(base64, 'base64')
-        .toString('binary')
-        .split('')
-        .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-        .join('')
-    );
+    const parts = token.split(".");
+    if (parts.length !== 3) {
+      console.error('Invalid JWT token format');
+      return null;
+    }
+    
+    const base64Url = parts[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    
+    // 패딩 추가
+    const padded = base64 + "=".repeat((4 - base64.length % 4) % 4);
+    
+    const jsonPayload = Buffer.from(padded, "base64").toString("utf8");
     return JSON.parse(jsonPayload);
   } catch (error) {
-    console.error('토큰 디코딩 실패:', error);
+    console.error("토큰 디코딩 실패:", error);
     return null;
   }
 };
@@ -30,12 +34,12 @@ const isTokenExpired = (token: string): boolean => {
   if (!decoded || !decoded.exp) {
     return true;
   }
-  
+
   // 현재 시간보다 5분 전에 만료되는 경우도 만료로 간주 (여유 시간)
   const currentTime = Math.floor(Date.now() / 1000);
   const bufferTime = 5 * 60; // 5분
-  
-  return decoded.exp <= (currentTime + bufferTime);
+
+  return decoded.exp <= currentTime + bufferTime;
 };
 
 export async function middleware(request: NextRequest) {
@@ -49,6 +53,13 @@ export async function middleware(request: NextRequest) {
   console.log("pathname:", pathname);
   console.log("accessToken exists:", !!accessToken);
   console.log("refreshToken exists:", !!refreshToken);
+  console.log("NEXT_PUBLIC_API_URL:", process.env.NEXT_PUBLIC_API_URL);
+  
+  if (accessToken) {
+    console.log("accessToken (first 20 chars):", accessToken.substring(0, 20) + "...");
+    const isExpired = isTokenExpired(accessToken);
+    console.log("accessToken is expired:", isExpired);
+  }
 
   // 보호된 경로들 (인증이 필요한 경로)
   const protectedPaths = ["/"];
@@ -62,9 +73,9 @@ export async function middleware(request: NextRequest) {
   // 현재 경로가 인증 페이지인지 확인
   const isAuthPath = authPaths.includes(pathname);
 
-  // 보호된 경로에 접근하는데 accessToken이 없거나 만료된 경우
-  if (isProtectedPath && (!accessToken || (accessToken && isTokenExpired(accessToken)))) {
-    console.log("accessToken이 없거나 만료되어 토큰 갱신 시도...");
+  // 보호된 경로에 접근하는데 accessToken이 없는 경우
+  if (isProtectedPath && !accessToken) {
+    console.log("accessToken이 없어서 토큰 갱신 시도...");
 
     // refreshToken이 있으면 토큰 갱신 시도
     if (refreshToken) {
@@ -72,20 +83,19 @@ export async function middleware(request: NextRequest) {
         console.log("토큰 갱신 시도...");
         console.log("refreshToken:", refreshToken);
 
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://front-mission.bigs.or.kr";
-        
-        const response = await fetch(
-          `${apiUrl}/auth/refresh`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ refreshToken }),
-            // 타임아웃 설정 (10초)
-            signal: AbortSignal.timeout(10000)
-          }
-        );
+        const apiUrl =
+          process.env.NEXT_PUBLIC_API_URL || "https://front-mission.bigs.or.kr";
+        console.log("API URL:", apiUrl);
+
+        const response = await fetch(`${apiUrl}/auth/refresh`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ refreshToken }),
+          // 타임아웃 설정 (10초)
+          signal: AbortSignal.timeout(10000)
+        });
 
         console.log("response status:", response.status);
         console.log("response ok:", response.ok);
@@ -118,7 +128,7 @@ export async function middleware(request: NextRequest) {
           return res;
         } else {
           console.log("갱신 실패:", response.status);
-          
+
           // refreshToken이 만료된 경우 쿠키 삭제
           if (response.status === 401) {
             const res = NextResponse.redirect(new URL("/login", request.url));
@@ -129,7 +139,7 @@ export async function middleware(request: NextRequest) {
         }
       } catch (error) {
         console.error("토큰 갱신 실패:", error);
-        
+
         // 네트워크 에러인 경우 쿠키 삭제 후 로그인 페이지로
         const res = NextResponse.redirect(new URL("/login", request.url));
         res.cookies.delete("accessToken");
@@ -146,7 +156,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // 이미 로그인한 사용자가 인증 페이지에 접근하는 경우
-  if (isAuthPath && accessToken && !isTokenExpired(accessToken)) {
+  if (isAuthPath && accessToken) {
     const homeUrl = new URL("/", request.url);
     return NextResponse.redirect(homeUrl);
   }
