@@ -9,6 +9,23 @@ import { fetchWithAuth } from "@/lib/utils/auth";
 import { Board } from "@/lib/types/board";
 import { SubmitHandler, useForm } from "react-hook-form";
 
+// 이미지 로드 실패 시 에러 처리 함수
+const handleImageError = (
+  event: React.SyntheticEvent<HTMLImageElement, Event>,
+  imageUrl?: string
+) => {
+  console.error("이미지 로드 실패:", imageUrl);
+  const target = event.currentTarget;
+  target.style.display = "none";
+
+  // 이미지 로드 실패 시 대체 메시지 표시
+  const errorDiv = document.createElement("div");
+  errorDiv.className =
+    "p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 text-center";
+  errorDiv.textContent = "이미지를 불러올 수 없습니다.";
+  target.parentNode?.appendChild(errorDiv);
+};
+
 export default function BoardDetailPage() {
   const [board, setBoard] = useState<Board | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -359,6 +376,7 @@ export default function BoardDetailPage() {
                       src={board.imageUrl}
                       alt="게시글 이미지"
                       className="max-w-full h-auto rounded-lg shadow-sm"
+                      onError={(e) => handleImageError(e, board.imageUrl)}
                     />
                   </div>
                 )}
