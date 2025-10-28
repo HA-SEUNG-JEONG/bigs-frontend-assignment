@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { setAuthCookies } from "@/lib/utils/cookies";
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,26 +26,13 @@ export async function POST(request: NextRequest) {
         { status: 200 }
       );
 
-      // accessToken 쿠키 설정 (24시간)
+      // 쿠키 설정
       if (responseData.accessToken) {
-        nextResponse.cookies.set("accessToken", responseData.accessToken, {
-          path: "/",
-          maxAge: 86400, // 24시간
-          secure: false, // 개발 환경에서는 false
-          sameSite: "lax",
-          httpOnly: true // XSS 공격 방지
-        });
-      }
-
-      // refreshToken 쿠키 설정 (7일)
-      if (responseData.refreshToken) {
-        nextResponse.cookies.set("refreshToken", responseData.refreshToken, {
-          path: "/",
-          maxAge: 604800, // 7일
-          secure: false, // 개발 환경에서는 false
-          sameSite: "lax",
-          httpOnly: true // XSS 공격 방지
-        });
+        return setAuthCookies(
+          nextResponse,
+          responseData.accessToken,
+          responseData.refreshToken
+        );
       }
 
       return nextResponse;

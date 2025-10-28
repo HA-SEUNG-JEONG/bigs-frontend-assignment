@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { deleteAuthCookies } from "@/lib/utils/cookies";
 
 export async function POST(request: NextRequest) {
   try {
@@ -31,10 +32,7 @@ export async function POST(request: NextRequest) {
     );
 
     // httpOnly 쿠키 삭제
-    response.cookies.delete("accessToken");
-    response.cookies.delete("refreshToken");
-
-    return response;
+    return deleteAuthCookies(response);
   } catch (error) {
     // 오류가 발생해도 쿠키는 삭제
     const errorResponse = NextResponse.json(
@@ -42,11 +40,6 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
 
-    errorResponse.cookies.delete("accessToken");
-    errorResponse.cookies.delete("refreshToken");
-
-    return errorResponse;
+    return deleteAuthCookies(errorResponse);
   }
 }
-
-

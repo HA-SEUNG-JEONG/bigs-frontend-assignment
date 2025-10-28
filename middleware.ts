@@ -33,9 +33,9 @@ const isTokenExpired = (token: string): boolean => {
     return true;
   }
 
-  // 현재 시간보다 5분 전에 만료되는 경우도 만료로 간주 (여유 시간)
+  // 현재 시간보다 30초 전에 만료되는 경우도 만료로 간주 (여유 시간)
   const currentTime = Math.floor(Date.now() / 1000);
-  const bufferTime = 5 * 60; // 5분
+  const bufferTime = 30; // 30초
 
   return decoded.exp <= currentTime + bufferTime;
 };
@@ -129,11 +129,6 @@ export async function middleware(request: NextRequest) {
     // refreshToken이 없거나 갱신 실패 시 로그인 페이지로
     const loginUrl = new URL("/login", request.url);
     return NextResponse.redirect(loginUrl);
-  }
-
-  // accessToken이 있고 유효하면 그냥 통과
-  if (isProtectedPath && accessToken && !isTokenExpired(accessToken)) {
-    return NextResponse.next();
   }
 
   // 이미 로그인한 사용자가 인증 페이지에 접근하는 경우

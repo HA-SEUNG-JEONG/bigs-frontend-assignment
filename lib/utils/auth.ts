@@ -26,169 +26,46 @@ export const isTokenExpired = (token: string): boolean => {
     return true;
   }
 
-  // 현재 시간보다 5분 전에 만료되는 경우도 만료로 간주 (여유 시간)
+  // 현재 시간보다 30초 전에 만료되는 경우도 만료로 간주 (여유 시간)
   const currentTime = Math.floor(Date.now() / 1000);
-  const bufferTime = 5 * 60; // 5분
+  const bufferTime = 30; // 30초
 
   return decoded.exp <= currentTime + bufferTime;
 };
 
 /**
- * 쿠키에서 특정 이름의 값을 가져옵니다.
- */
-export const getCookie = (name: string): string | null => {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop()?.split(";").shift() || null;
-  return null;
-};
-
-/**
- * 쿠키에 값을 설정합니다. (개선된 버전)
- */
-export const setCookie = (
-  name: string,
-  value: string,
-  maxAge: number
-): void => {
-  // 개발 환경에서는 secure 옵션을 제거하고 httpOnly도 제거
-  const isDev = process.env.NODE_ENV === "development";
-  let cookieString = `${name}=${value}; path=/; max-age=${maxAge}; samesite=lax`;
-  // 프로덕션 환경에서만 secure 옵션 추가
-  if (!isDev) {
-    cookieString += "; secure";
-  }
-  document.cookie = cookieString;
-};
-
-/**
- * 쿠키를 삭제합니다.
- */
-export const deleteCookie = (name: string): void => {
-  document.cookie = `${name}=; path=/; max-age=0; secure; samesite=lax`;
-};
-
-/**
  * refreshToken을 사용하여 새로운 accessToken을 발급받습니다.
+ * 주의: httpOnly 쿠키는 클라이언트에서 직접 접근할 수 없으므로 이 함수는 제한적으로 사용됩니다.
  */
 export const refreshAccessToken = async (): Promise<string> => {
-  const refreshToken = getCookie("refreshToken");
-
-  if (!refreshToken) {
-    throw new Error("refreshToken이 없습니다.");
-  }
-
-  try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    if (!apiUrl) {
-      throw new Error("API URL이 설정되지 않았습니다.");
-    }
-
-    const response = await fetch(`${apiUrl}/auth/refresh`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ refreshToken }),
-      // 타임아웃 설정 (10초)
-      signal: AbortSignal.timeout(10000)
-    });
-
-    if (!response.ok) {
-      if (response.status === 401) {
-        throw new Error("refreshToken이 만료되었습니다. 다시 로그인해주세요.");
-      } else if (response.status >= 500) {
-        throw new Error("서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
-      } else {
-        throw new Error(`토큰 갱신 실패: ${response.status}`);
-      }
-    }
-
-    const data = await response.json();
-
-    if (!data.accessToken) {
-      throw new Error("새로운 accessToken을 받지 못했습니다.");
-    }
-
-    // 새로운 accessToken을 쿠키에 저장 (24시간)
-    setCookie("accessToken", data.accessToken, 86400);
-
-    // 새로운 refreshToken이 있다면 저장 (7일)
-    if (data.refreshToken) {
-      setCookie("refreshToken", data.refreshToken, 604800);
-    }
-
-    return data.accessToken;
-  } catch (error) {
-    // 토큰 갱신 중 오류 발생
-    throw error;
-  }
+  // httpOnly 쿠키는 클라이언트에서 직접 접근할 수 없으므로
+  // 이 함수는 실제로는 사용되지 않습니다.
+  // 대신 서버 사이드에서 토큰 갱신을 처리해야 합니다.
+  throw new Error(
+    "클라이언트에서 refreshToken에 직접 접근할 수 없습니다. 서버 사이드에서 처리하세요."
+  );
 };
 
 /**
- * 인증이 필요한 API 요청을 보내고, 401 에러 시 자동으로 토큰을 갱신하여 재시도합니다.
+ * 인증이 필요한 API 요청을 보냅니다.
+ * 주의: httpOnly 쿠키를 사용하므로 클라이언트에서 토큰을 직접 관리할 수 없습니다.
+ * 서버 사이드에서 토큰 갱신을 처리해야 합니다.
  */
 export const fetchWithAuth = async (
   url: string,
   options: RequestInit = {}
 ): Promise<Response> => {
-  // 쿠키에서 accessToken 가져오기
-  const accessToken = getCookie("accessToken");
+  // httpOnly 쿠키는 클라이언트에서 직접 접근할 수 없으므로
+  // 단순히 fetch 요청만 수행합니다.
+  // 토큰 갱신은 서버 사이드(middleware)에서 처리됩니다.
 
-  if (!accessToken) {
-    throw new Error("accessToken이 없습니다.");
-  }
-
-  // 토큰 만료 검증 (사전 검증)
-  if (isTokenExpired(accessToken)) {
-    try {
-      const newAccessToken = await refreshAccessToken();
-
-      // 새로운 토큰으로 요청 진행
-      const defaultHeaders: Record<string, string> = {
-        Authorization: `Bearer ${newAccessToken}`
-      };
-
-      if (!(options.body instanceof FormData)) {
-        defaultHeaders["Content-Type"] = "application/json";
-      }
-
-      const requestOptions: RequestInit = {
-        ...options,
-        headers: {
-          ...defaultHeaders,
-          ...options.headers
-        }
-      };
-
-      return await fetch(url, requestOptions);
-    } catch (refreshError) {
-      // 사전 토큰 갱신 실패
-
-      // 토큰 갱신 실패 시 로그인 페이지로 리다이렉트
-      if (typeof window !== "undefined") {
-        document.cookie =
-          "accessToken=; path=/; max-age=0; secure; samesite=lax";
-        document.cookie =
-          "refreshToken=; path=/; max-age=0; secure; samesite=lax";
-        window.location.href = "/login";
-      }
-
-      throw refreshError;
-    }
-  }
-
-  // 기본 헤더 설정
-  const defaultHeaders: Record<string, string> = {
-    Authorization: `Bearer ${accessToken}`
-  };
+  const defaultHeaders: Record<string, string> = {};
 
   // FormData가 아닌 경우에만 Content-Type 추가
   if (!(options.body instanceof FormData)) {
     defaultHeaders["Content-Type"] = "application/json";
   }
 
-  // 요청 옵션 병합
   const requestOptions: RequestInit = {
     ...options,
     headers: {
@@ -197,47 +74,5 @@ export const fetchWithAuth = async (
     }
   };
 
-  try {
-    const response = await fetch(url, requestOptions);
-
-    // 401 에러가 발생한 경우 토큰 갱신 시도 (백업 로직)
-    if (response.status === 401) {
-      try {
-        // 토큰 갱신
-        const newAccessToken = await refreshAccessToken();
-
-        // 새로운 토큰으로 원래 요청 재시도
-        const retryOptions: RequestInit = {
-          ...requestOptions,
-          headers: {
-            ...requestOptions.headers,
-            Authorization: `Bearer ${newAccessToken}`
-          }
-        };
-
-        return await fetch(url, retryOptions);
-      } catch (refreshError) {
-        // 토큰 갱신 실패
-
-        // 토큰 갱신 실패 시 로그인 페이지로 리다이렉트
-        if (typeof window !== "undefined") {
-          // 쿠키 삭제
-          document.cookie =
-            "accessToken=; path=/; max-age=0; secure; samesite=lax";
-          document.cookie =
-            "refreshToken=; path=/; max-age=0; secure; samesite=lax";
-
-          // 로그인 페이지로 리다이렉트
-          window.location.href = "/login";
-        }
-
-        throw refreshError;
-      }
-    }
-
-    return response;
-  } catch (error) {
-    // API 요청 중 오류 발생
-    throw error;
-  }
+  return await fetch(url, requestOptions);
 };
