@@ -62,9 +62,7 @@ export default function WritePostClient() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await fetchWithAuth(
-          `${process.env.NEXT_PUBLIC_API_URL}/boards/categories`
-        );
+        const res = await fetch("/api/boards/categories");
 
         if (res.ok) {
           const data = await res.json();
