@@ -49,3 +49,48 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
+export async function POST(request: NextRequest) {
+  try {
+    // 쿠키에서 accessToken 가져오기
+    const accessToken = request.cookies.get("accessToken")?.value;
+
+    if (!accessToken) {
+      return NextResponse.json(
+        { error: "인증이 필요합니다." },
+        { status: 401 }
+      );
+    }
+
+    // FormData를 그대로 외부 API로 전달
+    const formData = await request.formData();
+
+    // 외부 API로 게시글 작성 요청
+    const externalApiUrl =
+      process.env.NEXT_PUBLIC_API_URL || "https://front-mission.bigs.or.kr";
+    const response = await fetch(`${externalApiUrl}/boards`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      },
+      body: formData
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      return NextResponse.json(data, { status: 201 });
+    } else {
+      // 다른 오류의 경우 그대로 전달
+      const errorData = await response.json().catch(() => ({}));
+      return NextResponse.json(
+        { error: errorData.error || "게시글 작성에 실패했습니다." },
+        { status: response.status }
+      );
+    }
+  } catch (error) {
+    return NextResponse.json(
+      { error: "서버 오류가 발생했습니다." },
+      { status: 500 }
+    );
+  }
+}

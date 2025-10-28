@@ -39,13 +39,10 @@ export default function WritePostClient() {
         formData.append("file", selectedFile);
       }
 
-      const res = await fetchWithAuth(
-        `${process.env.NEXT_PUBLIC_API_URL}/boards`,
-        {
-          method: "POST",
-          body: formData
-        }
-      );
+      const res = await fetchWithAuth(`/api/boards`, {
+        method: "POST",
+        body: formData
+      });
 
       if (res.ok) {
         router.push("/");

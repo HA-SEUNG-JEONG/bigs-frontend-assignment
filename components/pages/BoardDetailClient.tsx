@@ -56,9 +56,7 @@ export default function BoardDetailClient() {
   const fetchBoardDetail = async () => {
     try {
       setIsLoading(true);
-      const res = await fetchWithAuth(
-        `${process.env.NEXT_PUBLIC_API_URL}/boards/${boardId}`
-      );
+      const res = await fetchWithAuth(`/api/boards/${boardId}`);
 
       if (res.ok) {
         const data: Board = await res.json();
@@ -113,13 +111,10 @@ export default function BoardDetailClient() {
         formData.append("file", selectedFile);
       }
 
-      const res = await fetchWithAuth(
-        `${process.env.NEXT_PUBLIC_API_URL}/boards/${boardId}`,
-        {
-          method: "PATCH",
-          body: formData
-        }
-      );
+      const res = await fetchWithAuth(`/api/boards/${boardId}`, {
+        method: "PATCH",
+        body: formData
+      });
 
       if (res.ok) {
         await fetchBoardDetail();
@@ -144,12 +139,9 @@ export default function BoardDetailClient() {
     setShowDeleteModal(false);
 
     try {
-      const res = await fetchWithAuth(
-        `${process.env.NEXT_PUBLIC_API_URL}/boards/${boardId}`,
-        {
-          method: "DELETE"
-        }
-      );
+      const res = await fetchWithAuth(`/api/boards/${boardId}`, {
+        method: "DELETE"
+      });
 
       if (res.ok) {
         addToast({
