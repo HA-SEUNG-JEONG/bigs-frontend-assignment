@@ -14,8 +14,32 @@ export default function HomeClient() {
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [userName, setUserName] = useState<string>("");
+  const [isLoadingUser, setIsLoadingUser] = useState(true);
   const router = useRouter();
   const { addToast } = useToast();
+
+  const fetchUserInfo = async () => {
+    try {
+      setIsLoadingUser(true);
+      const res = await fetch("/api/auth/me");
+
+      if (res.ok) {
+        const userInfo = await res.json();
+        setUserName(userInfo.name || "사용자");
+      } else {
+        // 401 에러인 경우 로그인 페이지로 리다이렉트
+        if (res.status === 401) {
+          router.replace("/signin");
+        }
+      }
+    } catch (error) {
+      // 사용자 정보 조회 중 오류
+      console.error("사용자 정보 조회 실패:", error);
+    } finally {
+      setIsLoadingUser(false);
+    }
+  };
 
   const fetchBoards = async (page: number = 0) => {
     try {
@@ -53,6 +77,7 @@ export default function HomeClient() {
   };
 
   useEffect(() => {
+    fetchUserInfo();
     fetchBoards();
   }, []);
 
@@ -109,6 +134,11 @@ export default function HomeClient() {
               </div>
             </div>
             <div className="flex items-center space-x-4">
+              {!isLoadingUser && userName && (
+                <span className="text-sm text-gray-600 font-medium">
+                  안녕하세요, {userName}님
+                </span>
+              )}
               <button
                 onClick={handleLogoutClick}
                 disabled={isLoggingOut}
