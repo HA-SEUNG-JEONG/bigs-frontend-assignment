@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
-import { fetchWithAuth, deleteCookie } from "@/lib/utils/auth";
 import { Board, BoardListResponse } from "@/lib/types/board";
 import { useToast } from "@/components/ui/ToastProvider";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
@@ -25,21 +24,23 @@ export default function HomeClient() {
   const fetchBoards = async (page: number = 0) => {
     try {
       setIsLoading(true);
-      const res = await fetchWithAuth(
-        `${process.env.NEXT_PUBLIC_API_URL}/boards?page=${page}&size=10`
-      );
+      const res = await fetch(`/api/boards?page=${page}&size=10`);
 
       if (res.ok) {
-        const data: BoardListResponse = await res.json();
+        const { content, totalPages, number }: BoardListResponse =
+          await res.json();
 
-        setBoards(data.content);
-        setTotalPages(data.totalPages);
-        setCurrentPage(data.number);
+        setBoards(content);
+        setTotalPages(totalPages);
+        setCurrentPage(number);
       } else {
-        console.error("게시글 목록 조회 실패:", res.status);
+        // 401 에러인 경우 로그인 페이지로 리다이렉트
+        if (res.status === 401) {
+          router.replace("/login");
+        }
       }
     } catch (error) {
-      console.error("게시글 목록 조회 중 오류:", error);
+      // 게시글 목록 조회 중 오류
     } finally {
       setIsLoading(false);
     }
@@ -63,24 +64,35 @@ export default function HomeClient() {
     setShowLogoutModal(true);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     setShowLogoutModal(false);
     setIsLoggingOut(true);
 
     try {
-      deleteCookie("accessToken");
-      deleteCookie("refreshToken");
-
-      setUserInfo(null);
-
-      addToast({
-        message: "성공적으로 로그아웃되었습니다.",
-        type: "success"
+      const res = await fetch("/api/auth/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        }
       });
 
-      router.replace("/login");
+      if (res.ok) {
+        setUserInfo(null);
+
+        addToast({
+          message: "성공적으로 로그아웃되었습니다.",
+          type: "success"
+        });
+
+        router.replace("/login");
+      } else {
+        addToast({
+          message: "로그아웃 중 오류가 발생했습니다.",
+          type: "error"
+        });
+        router.replace("/login");
+      }
     } catch (error) {
-      console.error("로그아웃 중 오류 발생:", error);
       addToast({
         message: "로그아웃 중 오류가 발생했습니다.",
         type: "error"
