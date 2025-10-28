@@ -45,10 +45,12 @@ export function BoardList({
 
   return (
     <section aria-label="게시글 목록">
-      <header className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold text-gray-900">게시글 목록</h2>
+      <header className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 space-y-2 sm:space-y-0">
+        <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
+          게시글 목록
+        </h2>
         <Button
-          className="px-4 py-2 text-sm font-medium"
+          className="w-full sm:w-auto px-4 py-2 text-sm font-medium"
           variant="secondary"
           onClick={onWritePost}
         >
@@ -56,13 +58,43 @@ export function BoardList({
         </Button>
       </header>
 
-      <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-        {/* Grid 헤더 */}
-        <div className="grid grid-cols-3 gap-4 px-6 py-3 bg-gray-50 border-b border-gray-200">
+      <div className="space-y-4 sm:hidden">
+        {boards.map((board) => (
+          <article
+            key={board.id}
+            className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md cursor-pointer transition-shadow"
+            onClick={() => onBoardClick(board.id)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onBoardClick(board.id);
+              }
+            }}
+            aria-label={`게시글: ${board.title}`}
+          >
+            <h3 className="text-sm font-medium text-gray-900 mb-2 line-clamp-2">
+              {board.title}
+            </h3>
+            <div className="flex justify-between items-center text-xs text-gray-500">
+              <span className="bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full">
+                {board.category}
+              </span>
+              <time dateTime={board.createdAt}>
+                {new Date(board.createdAt).toLocaleDateString("ko-KR")}
+              </time>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <div className="hidden sm:block bg-white border border-gray-200 rounded-lg overflow-hidden">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 px-6 py-3 bg-gray-50 border-b border-gray-200">
           <div className="text-xs font-medium text-gray-500 uppercase tracking-wider">
             제목
           </div>
-          <div className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+          <div className="hidden md:block text-xs font-medium text-gray-500 uppercase tracking-wider">
             카테고리
           </div>
           <div className="text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -70,12 +102,11 @@ export function BoardList({
           </div>
         </div>
 
-        {/* Grid 아이템들 */}
         <div className="divide-y divide-gray-200">
           {boards.map((board) => (
             <article
               key={board.id}
-              className="grid grid-cols-3 gap-4 px-6 py-4 hover:bg-gray-50 cursor-pointer transition-colors"
+              className="grid grid-cols-1 md:grid-cols-3 gap-4 px-6 py-4 hover:bg-gray-50 cursor-pointer transition-colors"
               onClick={() => onBoardClick(board.id)}
               role="button"
               tabIndex={0}
@@ -90,7 +121,9 @@ export function BoardList({
               <div className="text-sm font-medium text-gray-900">
                 {board.title}
               </div>
-              <div className="text-sm text-gray-500">{board.category}</div>
+              <div className="hidden md:block text-sm text-gray-500">
+                {board.category}
+              </div>
               <div className="text-sm text-gray-500">
                 {new Date(board.createdAt).toLocaleDateString("ko-KR")}
               </div>
@@ -99,12 +132,13 @@ export function BoardList({
         </div>
       </div>
 
-      {/* 페이지네이션 */}
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={onPageChange}
-      />
+      <div className="mt-6">
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={onPageChange}
+        />
+      </div>
     </section>
   );
 }

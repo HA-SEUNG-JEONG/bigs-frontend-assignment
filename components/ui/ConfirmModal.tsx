@@ -10,7 +10,6 @@ interface ConfirmModalProps {
   cancelText?: string;
   onConfirm: () => void;
   onCancel: () => void;
-  type?: "danger" | "warning" | "info";
 }
 
 export const ConfirmModal = ({
@@ -20,23 +19,9 @@ export const ConfirmModal = ({
   confirmText = "확인",
   cancelText = "취소",
   onConfirm,
-  onCancel,
-  type = "danger"
+  onCancel
 }: ConfirmModalProps) => {
   if (!isOpen) return null;
-
-  const getButtonStyles = () => {
-    switch (type) {
-      case "danger":
-        return "bg-red-600 hover:bg-red-700 text-white";
-      case "warning":
-        return "bg-yellow-600 hover:bg-yellow-700 text-white";
-      case "info":
-        return "bg-blue-600 hover:bg-blue-700 text-white";
-      default:
-        return "bg-gray-600 hover:bg-gray-700 text-white";
-    }
-  };
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -65,7 +50,7 @@ export const ConfirmModal = ({
               </Button>
               <Button
                 onClick={onConfirm}
-                className={`px-4 py-2 ${getButtonStyles()}`}
+                className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white"
               >
                 {confirmText}
               </Button>

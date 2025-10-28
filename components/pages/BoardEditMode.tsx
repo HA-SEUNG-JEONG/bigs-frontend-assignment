@@ -78,12 +78,12 @@ export function BoardEditMode({
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <fieldset className="space-y-6">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6">
+      <fieldset className="space-y-4 sm:space-y-6">
         <legend className="sr-only">게시글 수정 폼</legend>
 
         <Input
-          className="w-full p-4 text-lg font-medium border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+          className="w-full p-3 sm:p-4 text-base sm:text-lg font-medium border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
           label="제목"
           placeholder="제목을 입력해주세요"
           error={errors.title?.message}
@@ -103,7 +103,7 @@ export function BoardEditMode({
         <Textarea
           label="내용"
           placeholder="내용을 입력해주세요"
-          rows={10}
+          rows={8}
           error={errors.content?.message}
           {...register("content", {
             required: "내용을 입력해주세요",
@@ -132,14 +132,19 @@ export function BoardEditMode({
         />
       </fieldset>
 
-      <footer className="flex justify-end space-x-2">
-        <Button type="button" variant="secondary" onClick={handleCancel}>
+      <footer className="flex flex-row justify-end gap-2">
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={handleCancel}
+          className="flex-1 sm:flex-none sm:w-auto"
+        >
           취소
         </Button>
         <Button
           type="submit"
           isLoading={isSubmitting}
-          className="px-6 py-2"
+          className="flex-1 sm:flex-none sm:w-auto px-4 sm:px-6 py-2 sm:py-2"
           disabled={isLoadingCategories}
         >
           {isSubmitting ? "수정 중..." : "수정 완료"}

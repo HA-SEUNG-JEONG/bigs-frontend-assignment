@@ -60,20 +60,22 @@ export default function WritePostClient() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="max-w-2xl mx-auto py-6 px-4">
-        <header className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">글 작성</h1>
+      <div className="max-w-2xl mx-auto py-4 sm:py-6 px-4">
+        <header className="mb-4 sm:mb-6">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+            글 작성
+          </h1>
         </header>
 
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="space-y-5 bg-white rounded-lg shadow p-6"
+          className="space-y-4 sm:space-y-5 bg-white rounded-lg shadow p-4 sm:p-6"
         >
-          <fieldset className="space-y-5">
+          <fieldset className="space-y-4 sm:space-y-5">
             <legend className="sr-only">게시글 작성 폼</legend>
 
             <Input
-              className="w-full p-4 text-lg font-medium border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+              className="w-full p-3 sm:p-4 text-base sm:text-lg font-medium border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
               label="제목"
               placeholder="제목을 입력해주세요"
               error={errors.title?.message}
@@ -93,7 +95,7 @@ export default function WritePostClient() {
             <Textarea
               label="내용"
               placeholder="내용을 입력해주세요"
-              rows={10}
+              rows={8}
               error={errors.content?.message}
               {...register("content", {
                 required: "내용을 입력해주세요",
@@ -125,7 +127,7 @@ export default function WritePostClient() {
           <Button
             isLoading={isSubmitting}
             type="submit"
-            className="w-full py-4 text-lg font-medium"
+            className="w-full py-3 sm:py-4 text-base sm:text-lg font-medium"
             disabled={isLoadingCategories}
           >
             {isSubmitting ? "저장 중..." : "저장"}

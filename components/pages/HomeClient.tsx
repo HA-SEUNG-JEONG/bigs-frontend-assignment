@@ -43,11 +43,6 @@ export default function HomeClient() {
         });
 
         router.replace("/signin");
-      } else {
-        addToast({
-          message: "로그아웃 중 오류가 발생했습니다.",
-          type: "error"
-        });
       }
     } catch (error) {
       addToast({
@@ -82,24 +77,22 @@ export default function HomeClient() {
       />
 
       {/* 메인 콘텐츠 */}
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
-          <div className="bg-white rounded-lg shadow p-6">
-            {/* 환영 메시지 */}
-            <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4 mb-6"></div>
+      <main className="max-w-7xl mx-auto py-4 sm:py-6 px-4 sm:px-6 lg:px-8">
+        <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+          {/* 환영 메시지 */}
+          <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6"></div>
 
-            {/* 게시글 목록 */}
-            <div className="mt-8">
-              <BoardList
-                boards={boards}
-                isLoading={isLoading}
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onBoardClick={handleBoardClick}
-                onPageChange={handlePageChange}
-                onWritePost={handleWritePost}
-              />
-            </div>
+          {/* 게시글 목록 */}
+          <div className="mt-4 sm:mt-8">
+            <BoardList
+              boards={boards}
+              isLoading={isLoading}
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onBoardClick={handleBoardClick}
+              onPageChange={handlePageChange}
+              onWritePost={handleWritePost}
+            />
           </div>
         </div>
       </main>
@@ -113,7 +106,6 @@ export default function HomeClient() {
         cancelText="취소"
         onConfirm={handleLogout}
         onCancel={handleCancelLogout}
-        type="warning"
       />
     </div>
   );

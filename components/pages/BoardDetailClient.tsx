@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
-import { Header } from "@/components/layout/Header";
 import { BoardViewMode } from "@/components/pages/BoardViewMode";
 import { BoardEditMode } from "@/components/pages/BoardEditMode";
 import { fetchWithAuth } from "@/lib/utils/auth";
@@ -121,9 +120,6 @@ export default function BoardDetailClient() {
       <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
         <section className="text-center" aria-label="게시글 없음">
           <p className="text-gray-600">게시글을 찾을 수 없습니다.</p>
-          <Button className="mt-4" onClick={() => router.push("/")}>
-            목록으로 돌아가기
-          </Button>
         </section>
       </main>
     );
@@ -134,37 +130,37 @@ export default function BoardDetailClient() {
       {/* 헤더 */}
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-4 sm:py-6 space-y-4 sm:space-y-0">
             <div className="flex items-center">
               <Button
                 variant="secondary"
                 onClick={() => router.push("/")}
-                className="mr-4"
+                className="mr-4 text-sm sm:text-base"
               >
                 ← 목록으로
               </Button>
-              <h1 className="text-2xl font-bold text-gray-900">
+              <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">
                 {isEditing ? "게시글 수정" : "게시글 상세"}
               </h1>
             </div>
-            <div className="flex items-center space-x-2">
-              {!isEditing ? (
+            <div className="flex flex-row items-center gap-2">
+              {!isEditing && (
                 <>
-                  <Button variant="primary" onClick={startEditing}>
+                  <Button
+                    variant="primary"
+                    onClick={startEditing}
+                    className="flex-1 sm:flex-none sm:w-auto"
+                  >
                     수정하기
                   </Button>
                   <Button
                     variant="secondary"
                     onClick={handleDeleteClick}
-                    className="bg-red-600 hover:bg-red-700 text-white"
+                    className="flex-1 sm:flex-none sm:w-auto bg-red-600 hover:bg-red-700 text-white"
                   >
                     삭제하기
                   </Button>
                 </>
-              ) : (
-                <Button variant="secondary" onClick={cancelEditing}>
-                  취소
-                </Button>
               )}
             </div>
           </div>
@@ -172,19 +168,17 @@ export default function BoardDetailClient() {
       </header>
 
       {/* 메인 콘텐츠 */}
-      <main className="max-w-4xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
-          <div className="bg-white rounded-lg shadow p-6">
-            {isEditing ? (
-              <BoardEditMode
-                board={board}
-                onCancel={cancelEditing}
-                onSuccess={handleEditSuccess}
-              />
-            ) : (
-              <BoardViewMode board={board} />
-            )}
-          </div>
+      <main className="max-w-4xl mx-auto py-4 sm:py-6 px-4 sm:px-6 lg:px-8">
+        <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+          {isEditing ? (
+            <BoardEditMode
+              board={board}
+              onCancel={cancelEditing}
+              onSuccess={handleEditSuccess}
+            />
+          ) : (
+            <BoardViewMode board={board} />
+          )}
         </div>
       </main>
 
@@ -197,7 +191,6 @@ export default function BoardDetailClient() {
         cancelText="취소"
         onConfirm={handleDeleteBoard}
         onCancel={handleCancelDelete}
-        type="danger"
       />
     </div>
   );
