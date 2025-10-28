@@ -3,17 +3,17 @@
  */
 export const decodeToken = (token: string): any => {
   try {
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const base64Url = token.split(".")[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
     const jsonPayload = decodeURIComponent(
       atob(base64)
-        .split('')
-        .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-        .join('')
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join("")
     );
     return JSON.parse(jsonPayload);
   } catch (error) {
-    console.error('토큰 디코딩 실패:', error);
+    console.error("토큰 디코딩 실패:", error);
     return null;
   }
 };
@@ -26,12 +26,12 @@ export const isTokenExpired = (token: string): boolean => {
   if (!decoded || !decoded.exp) {
     return true;
   }
-  
+
   // 현재 시간보다 5분 전에 만료되는 경우도 만료로 간주 (여유 시간)
   const currentTime = Math.floor(Date.now() / 1000);
   const bufferTime = 5 * 60; // 5분
-  
-  return decoded.exp <= (currentTime + bufferTime);
+
+  return decoded.exp <= currentTime + bufferTime;
 };
 
 /**
@@ -45,14 +45,25 @@ export const getCookie = (name: string): string | null => {
 };
 
 /**
- * 쿠키에 값을 설정합니다.
+ * 쿠키에 값을 설정합니다. (개선된 버전)
  */
 export const setCookie = (
   name: string,
   value: string,
   maxAge: number
 ): void => {
-  document.cookie = `${name}=${value}; path=/; max-age=${maxAge}; secure; samesite=lax`;
+  // 개발 환경에서는 secure 옵션을 제거
+  const isDev = process.env.NODE_ENV === 'development';
+  const secureFlag = isDev ? '' : 'secure';
+  
+  document.cookie = `${name}=${value}; path=/; max-age=${maxAge}; ${secureFlag}; samesite=lax`;
+};
+
+/**
+ * 쿠키를 삭제합니다.
+ */
+export const deleteCookie = (name: string): void => {
+  document.cookie = `${name}=; path=/; max-age=0; secure; samesite=lax`;
 };
 
 /**
@@ -71,18 +82,15 @@ export const refreshAccessToken = async (): Promise<string> => {
       throw new Error("API URL이 설정되지 않았습니다.");
     }
 
-    const response = await fetch(
-      `${apiUrl}/auth/refresh`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ refreshToken }),
-        // 타임아웃 설정 (10초)
-        signal: AbortSignal.timeout(10000)
-      }
-    );
+    const response = await fetch(`${apiUrl}/auth/refresh`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ refreshToken }),
+      // 타임아웃 설정 (10초)
+      signal: AbortSignal.timeout(10000)
+    });
 
     if (!response.ok) {
       if (response.status === 401) {
@@ -111,15 +119,15 @@ export const refreshAccessToken = async (): Promise<string> => {
     return data.accessToken;
   } catch (error) {
     console.error("토큰 갱신 중 오류 발생:", error);
-    
+
     // 네트워크 에러인지 확인
     if (error instanceof Error) {
-      if (error.name === 'AbortError') {
+      if (error.name === "AbortError") {
         throw new Error("토큰 갱신 요청이 시간 초과되었습니다.");
       }
       throw error;
     }
-    
+
     throw new Error("토큰 갱신 중 알 수 없는 오류가 발생했습니다.");
   }
 };
@@ -141,10 +149,10 @@ export const fetchWithAuth = async (
   // 토큰 만료 검증 (사전 검증)
   if (isTokenExpired(accessToken)) {
     console.log("토큰이 만료되었습니다. 사전에 토큰을 갱신합니다...");
-    
+
     try {
       const newAccessToken = await refreshAccessToken();
-      
+
       // 새로운 토큰으로 요청 진행
       const defaultHeaders: Record<string, string> = {
         Authorization: `Bearer ${newAccessToken}`
@@ -165,14 +173,16 @@ export const fetchWithAuth = async (
       return await fetch(url, requestOptions);
     } catch (refreshError) {
       console.error("사전 토큰 갱신 실패:", refreshError);
-      
+
       // 토큰 갱신 실패 시 로그인 페이지로 리다이렉트
       if (typeof window !== "undefined") {
-        document.cookie = "accessToken=; path=/; max-age=0; secure; samesite=lax";
-        document.cookie = "refreshToken=; path=/; max-age=0; secure; samesite=lax";
+        document.cookie =
+          "accessToken=; path=/; max-age=0; secure; samesite=lax";
+        document.cookie =
+          "refreshToken=; path=/; max-age=0; secure; samesite=lax";
         window.location.href = "/login";
       }
-      
+
       throw refreshError;
     }
   }

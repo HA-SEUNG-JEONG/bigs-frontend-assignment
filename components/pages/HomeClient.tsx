@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
-import { fetchWithAuth } from "@/lib/utils/auth";
+import { fetchWithAuth, deleteCookie } from "@/lib/utils/auth";
 import { Board, BoardListResponse } from "@/lib/types/board";
 import { useToast } from "@/components/ui/ToastProvider";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
@@ -68,9 +68,8 @@ export default function HomeClient() {
     setIsLoggingOut(true);
 
     try {
-      document.cookie = "accessToken=; path=/; max-age=0; secure; samesite=lax";
-      document.cookie =
-        "refreshToken=; path=/; max-age=0; secure; samesite=lax";
+      deleteCookie("accessToken");
+      deleteCookie("refreshToken");
 
       setUserInfo(null);
 

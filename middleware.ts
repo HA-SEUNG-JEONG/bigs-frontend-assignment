@@ -8,16 +8,16 @@ const decodeToken = (token: string): any => {
   try {
     const parts = token.split(".");
     if (parts.length !== 3) {
-      console.error('Invalid JWT token format');
+      console.error("Invalid JWT token format");
       return null;
     }
-    
+
     const base64Url = parts[1];
     const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-    
+
     // 패딩 추가
-    const padded = base64 + "=".repeat((4 - base64.length % 4) % 4);
-    
+    const padded = base64 + "=".repeat((4 - (base64.length % 4)) % 4);
+
     const jsonPayload = Buffer.from(padded, "base64").toString("utf8");
     return JSON.parse(jsonPayload);
   } catch (error) {
@@ -54,9 +54,12 @@ export async function middleware(request: NextRequest) {
   console.log("accessToken exists:", !!accessToken);
   console.log("refreshToken exists:", !!refreshToken);
   console.log("NEXT_PUBLIC_API_URL:", process.env.NEXT_PUBLIC_API_URL);
-  
+
   if (accessToken) {
-    console.log("accessToken (first 20 chars):", accessToken.substring(0, 20) + "...");
+    console.log(
+      "accessToken (first 20 chars):",
+      accessToken.substring(0, 20) + "..."
+    );
     const isExpired = isTokenExpired(accessToken);
     console.log("accessToken is expired:", isExpired);
   }

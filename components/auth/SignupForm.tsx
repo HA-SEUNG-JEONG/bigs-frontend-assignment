@@ -59,7 +59,9 @@ export const SignupForm = () => {
     setSuccess(false);
 
     try {
-      const res = await fetch(`/api/auth/signup`, {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://front-mission.bigs.or.kr";
+      
+      const res = await fetch(`${apiUrl}/auth/signup`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -68,10 +70,19 @@ export const SignupForm = () => {
       });
 
       if (res.ok) {
-        router.push("/login");
+        setSuccess(true);
+        setTimeout(() => {
+          router.push("/login");
+        }, 2000);
+      } else {
+        const errorData = await res.json();
+        setError(errorData.error || "회원가입에 실패했습니다.");
       }
     } catch (error) {
+      console.error("회원가입 오류:", error);
       setError("네트워크 오류가 발생했습니다");
+    } finally {
+      setIsLoading(false);
     }
   };
 

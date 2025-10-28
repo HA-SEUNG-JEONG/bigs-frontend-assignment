@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { Input } from "../ui/Input";
 import { Button } from "../ui/Button";
 import { Alert } from "../ui/Alert";
+import { setCookie } from "@/lib/utils/auth";
 
 const signinSchema = z.object({
   username: z
@@ -42,7 +43,9 @@ export const LoginForm: React.FC = () => {
     setError("");
 
     try {
-      const res = await fetch(`/api/auth/signin`, {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://front-mission.bigs.or.kr";
+      
+      const res = await fetch(`${apiUrl}/auth/signin`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -54,10 +57,10 @@ export const LoginForm: React.FC = () => {
 
       if (res.ok) {
         if (responseData.accessToken) {
-          document.cookie = `accessToken=${responseData.accessToken}; path=/; max-age=86400; secure; samesite=lax`;
+          setCookie("accessToken", responseData.accessToken, 86400); // 24시간
         }
         if (responseData.refreshToken) {
-          document.cookie = `refreshToken=${responseData.refreshToken}; path=/; max-age=604800; secure; samesite=lax`;
+          setCookie("refreshToken", responseData.refreshToken, 604800); // 7일
         }
 
         router.replace("/");
@@ -65,6 +68,7 @@ export const LoginForm: React.FC = () => {
         setError(responseData.error || "로그인에 실패했습니다.");
       }
     } catch (error) {
+      console.error("로그인 오류:", error);
       setError("네트워크 오류가 발생했습니다.");
     } finally {
       setIsLoading(false);
