@@ -8,6 +8,8 @@ import Select from "@/components/ui/Select";
 import { fetchWithAuth } from "@/lib/utils/auth";
 import { Board } from "@/lib/types/board";
 import { SubmitHandler, useForm } from "react-hook-form";
+import { useToast } from "@/components/ui/ToastProvider";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 
 // 이미지 로드 실패 시 에러 처리 함수
 const handleImageError = (
@@ -34,9 +36,11 @@ export default function BoardDetailPage() {
     { value: string; label: string }[]
   >([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const router = useRouter();
   const params = useParams();
   const boardId = params.id as string;
+  const { addToast } = useToast();
 
   type PostFormData = {
     title: string;
@@ -143,6 +147,45 @@ export default function BoardDetailPage() {
     }
   };
 
+  // 게시글 삭제 확인 모달 열기
+  const handleDeleteClick = () => {
+    setShowDeleteModal(true);
+  };
+
+  // 게시글 삭제 실행
+  const handleDeleteBoard = async () => {
+    setShowDeleteModal(false);
+
+    try {
+      const res = await fetchWithAuth(
+        `${process.env.NEXT_PUBLIC_API_URL}/boards/${boardId}`,
+        {
+          method: "DELETE"
+        }
+      );
+
+      if (res.ok) {
+        addToast({
+          message: "게시글이 성공적으로 삭제되었습니다.",
+          type: "success"
+        });
+        router.push("/");
+      } else {
+        console.error("게시글 삭제 실패:", res.status);
+        addToast({
+          message: "게시글 삭제에 실패했습니다. 다시 시도해주세요.",
+          type: "error"
+        });
+      }
+    } catch (error) {
+      console.error("게시글 삭제 중 오류:", error);
+      addToast({
+        message: "게시글 삭제 중 오류가 발생했습니다. 다시 시도해주세요.",
+        type: "error"
+      });
+    }
+  };
+
   useEffect(() => {
     if (boardId) {
       fetchBoardDetail();
@@ -194,9 +237,18 @@ export default function BoardDetailPage() {
             </div>
             <div className="flex items-center space-x-2">
               {!isEditing ? (
-                <Button variant="primary" onClick={() => setIsEditing(true)}>
-                  수정하기
-                </Button>
+                <>
+                  <Button variant="primary" onClick={() => setIsEditing(true)}>
+                    수정하기
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    onClick={handleDeleteClick}
+                    className="bg-red-600 hover:bg-red-700 text-white"
+                  >
+                    삭제하기
+                  </Button>
+                </>
               ) : (
                 <Button
                   variant="secondary"
@@ -392,6 +444,18 @@ export default function BoardDetailPage() {
           </div>
         </div>
       </main>
+
+      {/* 삭제 확인 모달 */}
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        title="게시글 삭제"
+        message="정말로 이 게시글을 삭제하시겠습니까? 삭제된 게시글은 복구할 수 없습니다."
+        confirmText="삭제"
+        cancelText="취소"
+        onConfirm={handleDeleteBoard}
+        onCancel={() => setShowDeleteModal(false)}
+        type="danger"
+      />
     </div>
   );
 }

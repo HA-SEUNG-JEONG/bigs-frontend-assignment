@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { fetchWithAuth } from "@/lib/utils/auth";
 import { Board, BoardListResponse } from "@/lib/types/board";
+import { useToast } from "@/components/ui/ToastProvider";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 
 export default function Home() {
   const [userInfo, setUserInfo] = useState<{
@@ -12,11 +14,13 @@ export default function Home() {
     username?: string;
   } | null>(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [boards, setBoards] = useState<Board[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  const { addToast } = useToast();
 
   // 게시글 목록 조회
   const fetchBoards = async (page: number = 0) => {
@@ -59,8 +63,14 @@ export default function Home() {
     fetchBoards();
   }, []);
 
-  // 로그아웃 핸들러
+  // 로그아웃 확인 모달 열기
+  const handleLogoutClick = () => {
+    setShowLogoutModal(true);
+  };
+
+  // 로그아웃 실행
   const handleLogout = () => {
+    setShowLogoutModal(false);
     setIsLoggingOut(true);
 
     try {
@@ -72,10 +82,20 @@ export default function Home() {
       // 사용자 정보 초기화
       setUserInfo(null);
 
+      // 성공 토스트 표시
+      addToast({
+        message: "성공적으로 로그아웃되었습니다.",
+        type: "success"
+      });
+
       // 로그인 페이지로 리다이렉트
       router.replace("/login");
     } catch (error) {
       console.error("로그아웃 중 오류 발생:", error);
+      addToast({
+        message: "로그아웃 중 오류가 발생했습니다.",
+        type: "error"
+      });
       router.replace("/login");
     } finally {
       setIsLoggingOut(false);
@@ -104,7 +124,7 @@ export default function Home() {
                 님
               </div>
               <button
-                onClick={handleLogout}
+                onClick={handleLogoutClick}
                 disabled={isLoggingOut}
                 className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
@@ -248,6 +268,18 @@ export default function Home() {
           </div>
         </div>
       </main>
+
+      {/* 로그아웃 확인 모달 */}
+      <ConfirmModal
+        isOpen={showLogoutModal}
+        title="로그아웃"
+        message="정말로 로그아웃하시겠습니까?"
+        confirmText="로그아웃"
+        cancelText="취소"
+        onConfirm={handleLogout}
+        onCancel={() => setShowLogoutModal(false)}
+        type="warning"
+      />
     </div>
   );
 }
