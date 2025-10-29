@@ -1,58 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Header } from "@/components/layout/Header";
 import { BoardList } from "@/components/pages/BoardList";
-import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { useUserInfo } from "@/hooks/useUserInfo";
 import { useBoards } from "@/hooks/useBoards";
-import { useToast } from "@/components/ui/ToastProvider";
 
 export default function HomeClient() {
-  const router = useRouter();
-  const { addToast } = useToast();
-
-  const [showLogoutModal, setShowLogoutModal] = useState(false);
-
   const { userInfo, isLoadingUser } = useUserInfo();
   const { boards, currentPage, totalPages, isLoading, handlePageChange } =
     useBoards();
-
-  const handleLogoutClick = () => {
-    setShowLogoutModal(true);
-  };
-
-  const handleLogout = async () => {
-    setShowLogoutModal(false);
-
-    try {
-      const res = await fetch("/api/auth/logout", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        }
-      });
-
-      if (res.ok) {
-        addToast({
-          message: "성공적으로 로그아웃되었습니다.",
-          type: "success"
-        });
-
-        router.replace("/signin");
-      }
-    } catch (error) {
-      addToast({
-        message: "로그아웃 중 오류가 발생했습니다.",
-        type: "error"
-      });
-    }
-  };
-
-  const handleCancelLogout = () => {
-    setShowLogoutModal(false);
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -60,7 +16,6 @@ export default function HomeClient() {
       <Header
         userInfo={userInfo}
         isLoadingUser={isLoadingUser}
-        onLogoutClick={handleLogoutClick}
       />
 
       {/* 메인 콘텐츠 */}
@@ -117,17 +72,6 @@ export default function HomeClient() {
           </div>
         </div>
       </main>
-
-      {/* 로그아웃 확인 모달 */}
-      <ConfirmModal
-        isOpen={showLogoutModal}
-        title="로그아웃"
-        message="정말로 로그아웃하시겠습니까?"
-        confirmText="로그아웃"
-        cancelText="취소"
-        onConfirm={handleLogout}
-        onCancel={handleCancelLogout}
-      />
     </div>
   );
 }
