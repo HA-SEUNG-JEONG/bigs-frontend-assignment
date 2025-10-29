@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Pagination } from "@/components/ui/Pagination";
 import { Board } from "@/lib/types/board";
@@ -9,9 +10,7 @@ interface BoardListProps {
   isLoading: boolean;
   currentPage: number;
   totalPages: number;
-  onBoardClick: (boardId: number) => void;
   onPageChange: (page: number) => void;
-  onWritePost: () => void;
 }
 
 export function BoardList({
@@ -19,10 +18,17 @@ export function BoardList({
   isLoading,
   currentPage,
   totalPages,
-  onBoardClick,
-  onPageChange,
-  onWritePost
+  onPageChange
 }: BoardListProps) {
+  const router = useRouter();
+
+  const handleWritePost = () => {
+    router.push("/write-post");
+  };
+
+  const handleBoardClick = (boardId: number) => {
+    router.push(`/boards/${boardId}`);
+  };
   if (isLoading) {
     return (
       <section className="text-center py-8" aria-label="로딩 중">
@@ -52,7 +58,7 @@ export function BoardList({
         <Button
           className="w-full sm:w-auto px-4 py-2 text-sm font-medium"
           variant="secondary"
-          onClick={onWritePost}
+          onClick={handleWritePost}
         >
           글 작성하기
         </Button>
@@ -63,13 +69,13 @@ export function BoardList({
           <article
             key={board.id}
             className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md cursor-pointer transition-shadow"
-            onClick={() => onBoardClick(board.id)}
+            onClick={() => handleBoardClick(board.id)}
             role="button"
             tabIndex={0}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
-                onBoardClick(board.id);
+                handleBoardClick(board.id);
               }
             }}
             aria-label={`게시글: ${board.title}`}
@@ -107,13 +113,13 @@ export function BoardList({
             <article
               key={board.id}
               className="grid grid-cols-1 md:grid-cols-3 gap-4 px-6 py-4 hover:bg-gray-50 cursor-pointer transition-colors"
-              onClick={() => onBoardClick(board.id)}
+              onClick={() => handleBoardClick(board.id)}
               role="button"
               tabIndex={0}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault();
-                  onBoardClick(board.id);
+                  handleBoardClick(board.id);
                 }
               }}
               aria-label={`게시글: ${board.title}`}

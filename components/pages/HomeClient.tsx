@@ -54,14 +54,6 @@ export default function HomeClient() {
     setShowLogoutModal(false);
   };
 
-  const handleBoardClick = (boardId: number) => {
-    router.push(`/boards/${boardId}`);
-  };
-
-  const handleWritePost = () => {
-    router.push("/write-post");
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {/* 헤더 */}
@@ -120,9 +112,7 @@ export default function HomeClient() {
               isLoading={isLoading}
               currentPage={currentPage}
               totalPages={totalPages}
-              onBoardClick={handleBoardClick}
               onPageChange={handlePageChange}
-              onWritePost={handleWritePost}
             />
           </div>
         </div>

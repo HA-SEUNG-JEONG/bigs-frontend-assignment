@@ -26,10 +26,8 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     );
 
-    // httpOnly 쿠키 삭제
     return deleteAuthCookies(response);
   } catch (error) {
-    // 오류가 발생해도 쿠키는 삭제
     const errorResponse = NextResponse.json(
       { error: "로그아웃 처리 중 오류가 발생했습니다." },
       { status: 500 }
