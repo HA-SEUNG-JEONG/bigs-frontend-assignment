@@ -28,9 +28,7 @@ export async function GET(request: NextRequest) {
 
       // 토큰 갱신 요청
       const refreshResponse = await fetch(
-        `${
-          process.env.NEXT_PUBLIC_API_URL || "https://front-mission.bigs.or.kr"
-        }/auth/refresh`,
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
         {
           method: "POST",
           headers: {
@@ -86,8 +84,7 @@ export async function GET(request: NextRequest) {
     const size = searchParams.get("size") || "10";
 
     // 외부 API로 게시글 목록 조회 요청
-    const externalApiUrl =
-      process.env.NEXT_PUBLIC_API_URL || "https://front-mission.bigs.or.kr";
+    const externalApiUrl = process.env.NEXT_PUBLIC_API_URL;
     const response = await fetch(
       `${externalApiUrl}/boards?page=${page}&size=${size}`,
       {

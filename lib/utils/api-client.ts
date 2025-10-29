@@ -1,7 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
-
-const BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "https://front-mission.bigs.or.kr";
+import { NextResponse } from "next/server";
 
 /**
  * 공통 헤더 생성 함수
@@ -31,7 +28,7 @@ export async function fetchWithAuth(
   accessToken: string,
   options: RequestInit = {}
 ): Promise<Response> {
-  const url = `${BASE_URL}${endpoint}`;
+  const url = `${process.env.NEXT_PUBLIC_API_URL}${endpoint}`;
   const headers = createHeaders(options.body, accessToken);
 
   const requestOptions: RequestInit = {
@@ -52,7 +49,7 @@ export async function fetchWithoutAuth(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<Response> {
-  const url = `${BASE_URL}${endpoint}`;
+  const url = `${process.env.NEXT_PUBLIC_API_URL}${endpoint}`;
   const headers = createHeaders(options.body);
 
   const requestOptions: RequestInit = {

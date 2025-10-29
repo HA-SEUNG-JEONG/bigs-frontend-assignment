@@ -32,8 +32,7 @@ export async function middleware(request: NextRequest) {
     // refreshToken이 있으면 토큰 갱신 시도
     if (refreshToken) {
       try {
-        const apiUrl =
-          process.env.NEXT_PUBLIC_API_URL || "https://front-mission.bigs.or.kr";
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
         const response = await fetch(`${apiUrl}/auth/refresh`, {
           method: "POST",

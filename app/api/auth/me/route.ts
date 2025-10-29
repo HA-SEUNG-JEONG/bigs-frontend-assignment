@@ -41,9 +41,7 @@ export async function GET(request: NextRequest) {
 
       // 토큰 갱신 요청
       const refreshResponse = await fetch(
-        `${
-          process.env.NEXT_PUBLIC_API_URL || "https://front-mission.bigs.or.kr"
-        }/auth/refresh`,
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
         {
           method: "POST",
           headers: {
