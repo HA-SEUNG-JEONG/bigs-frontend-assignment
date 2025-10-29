@@ -25,8 +25,22 @@ export default function WritePostClient() {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors, isSubmitting }
-  } = useForm<PostFormData>();
+  } = useForm<PostFormData>({
+    defaultValues: {
+      title: "",
+      content: "",
+      category: ""
+    }
+  });
+
+  // 폼 필드들을 실시간으로 감지
+  const watchedFields = watch();
+  const isFormValid =
+    watchedFields.title?.trim() &&
+    watchedFields.content?.trim() &&
+    watchedFields.category;
 
   const onSubmit: SubmitHandler<PostFormData> = async (data) => {
     try {
@@ -109,6 +123,7 @@ export default function WritePostClient() {
             <Select
               label="카테고리"
               options={categories}
+              placeholder="카테고리를 선택해주세요"
               error={errors.category?.message}
               disabled={isLoadingCategories}
               {...register("category", {
@@ -127,8 +142,8 @@ export default function WritePostClient() {
           <Button
             isLoading={isSubmitting}
             type="submit"
+            disabled={!isFormValid || isSubmitting}
             className="w-full py-3 sm:py-4 text-base sm:text-lg font-medium"
-            disabled={isLoadingCategories}
           >
             {isSubmitting ? "저장 중..." : "저장"}
           </Button>
