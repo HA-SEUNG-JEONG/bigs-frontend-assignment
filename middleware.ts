@@ -14,13 +14,15 @@ export async function middleware(request: NextRequest) {
     !accessToken || (accessToken && isTokenExpiredServer(accessToken));
 
   // 보호된 경로들 (인증이 필요한 경로)
-  const protectedPaths = ["/"];
+  const protectedPaths = ["/", "/boards", "/write-post"];
 
   // 인증이 필요 없는 경로들 (이미 로그인한 사용자는 리다이렉트)
   const authPaths = ["/signIn", "/signup"];
 
   // 현재 경로가 보호된 경로인지 확인
-  const isProtectedPath = protectedPaths.includes(pathname);
+  const isProtectedPath = protectedPaths.some(
+    (path) => pathname === path || pathname.startsWith(path + "/")
+  );
 
   // 현재 경로가 인증 페이지인지 확인
   const isAuthPath = authPaths.includes(pathname);

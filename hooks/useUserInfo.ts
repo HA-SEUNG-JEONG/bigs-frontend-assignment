@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { fetchWithTokenRefresh } from "@/lib/utils/client-fetch";
 
 export interface UserInfo {
   name: string;
@@ -19,7 +20,7 @@ export function useUserInfo() {
   const fetchUserInfo = async () => {
     try {
       setIsLoadingUser(true);
-      const res = await fetch("/api/auth/me");
+      const res = await fetchWithTokenRefresh("/api/auth/me");
 
       if (res.ok) {
         const { name, username }: UserInfo = await res.json();

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { BoardViewMode } from "@/components/pages/BoardViewMode";
 import { BoardEditMode } from "@/components/pages/BoardEditMode";
-import { fetchWithAuth } from "@/lib/utils/auth";
+import { fetchWithTokenRefresh } from "@/lib/utils/client-fetch";
 import { Board } from "@/lib/types/board";
 import { useToast } from "@/components/ui/ToastProvider";
 
@@ -26,14 +26,18 @@ export default function BoardDetailClient() {
   const fetchBoardDetail = async () => {
     try {
       setIsLoading(true);
-      const res = await fetchWithAuth(`/api/boards/${boardId}`);
+      const res = await fetchWithTokenRefresh(`/api/boards/${boardId}`);
 
       if (res.ok) {
         const data: Board = await res.json();
         setBoard(data);
       } else {
         console.error("게시글 조회 실패:", res.status);
-        router.push("/");
+        if (res.status === 401) {
+          router.push("/signin");
+        } else {
+          router.push("/");
+        }
       }
     } catch (error) {
       console.error("게시글 조회 중 오류:", error);
@@ -48,7 +52,7 @@ export default function BoardDetailClient() {
     setShowDeleteModal(false);
 
     try {
-      const res = await fetchWithAuth(`/api/boards/${boardId}`, {
+      const res = await fetchWithTokenRefresh(`/api/boards/${boardId}`, {
         method: "DELETE"
       });
 
@@ -60,10 +64,14 @@ export default function BoardDetailClient() {
         router.push("/");
       } else {
         console.error("게시글 삭제 실패:", res.status);
-        addToast({
-          message: "게시글 삭제에 실패했습니다. 다시 시도해주세요.",
-          type: "error"
-        });
+        if (res.status === 401) {
+          router.push("/signin");
+        } else {
+          addToast({
+            message: "게시글 삭제에 실패했습니다. 다시 시도해주세요.",
+            type: "error"
+          });
+        }
       }
     } catch (error) {
       console.error("게시글 삭제 중 오류:", error);

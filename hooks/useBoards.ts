@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Board, BoardListResponse } from "@/lib/types/board";
+import { fetchWithTokenRefresh } from "@/lib/utils/client-fetch";
 
 export function useBoards() {
   const [boards, setBoards] = useState<Board[]>([]);
@@ -14,7 +15,9 @@ export function useBoards() {
   const fetchBoards = async (page: number = 0) => {
     try {
       setIsLoading(true);
-      const res = await fetch(`/api/boards?page=${page}&size=10`);
+      const res = await fetchWithTokenRefresh(
+        `/api/boards?page=${page}&size=10`
+      );
 
       if (res.ok) {
         const { content, totalPages, number }: BoardListResponse =

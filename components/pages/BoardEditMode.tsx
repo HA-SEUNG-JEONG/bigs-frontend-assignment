@@ -6,7 +6,7 @@ import Select from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
 import { FileUpload } from "@/components/ui/FileUpload";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { fetchWithAuth } from "@/lib/utils/auth";
+import { fetchWithTokenRefresh } from "@/lib/utils/client-fetch";
 import { Board } from "@/lib/types/board";
 import { useCategories } from "@/hooks/useCategories";
 
@@ -51,7 +51,7 @@ export function BoardEditMode({
       });
       formData.append("request", requestBlob);
 
-      const res = await fetchWithAuth(`/api/boards/${board.id}`, {
+      const res = await fetchWithTokenRefresh(`/api/boards/${board.id}`, {
         method: "PATCH",
         body: formData
       });
@@ -60,7 +60,12 @@ export function BoardEditMode({
         onSuccess();
       } else {
         console.error("게시글 수정 실패:", res.status);
-        alert("게시글 수정에 실패했습니다. 다시 시도해주세요.");
+        if (res.status === 401) {
+          alert("인증이 만료되었습니다. 다시 로그인해주세요.");
+          window.location.href = "/signin";
+        } else {
+          alert("게시글 수정에 실패했습니다. 다시 시도해주세요.");
+        }
       }
     } catch (error) {
       console.error("게시글 수정 중 오류:", error);

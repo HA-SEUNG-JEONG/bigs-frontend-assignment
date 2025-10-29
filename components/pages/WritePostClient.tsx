@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/Textarea";
 import { FileUpload } from "@/components/ui/FileUpload";
 import React, { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { fetchWithAuth } from "@/lib/utils/auth";
+import { fetchWithTokenRefresh } from "@/lib/utils/client-fetch";
 import { useRouter } from "next/navigation";
 import { useCategories } from "@/hooks/useCategories";
 
@@ -55,7 +55,7 @@ export default function WritePostClient() {
         formData.append("file", selectedFile);
       }
 
-      const res = await fetchWithAuth(`/api/boards`, {
+      const res = await fetchWithTokenRefresh(`/api/boards`, {
         method: "POST",
         body: formData
       });
@@ -64,7 +64,11 @@ export default function WritePostClient() {
         router.push("/");
       } else {
         console.error("글 작성 실패:", res.status);
-        alert("글 작성에 실패했습니다. 다시 시도해주세요.");
+        if (res.status === 401) {
+          router.push("/signin");
+        } else {
+          alert("글 작성에 실패했습니다. 다시 시도해주세요.");
+        }
       }
     } catch (error) {
       console.error("글 작성 중 오류:", error);
@@ -139,14 +143,24 @@ export default function WritePostClient() {
             />
           </fieldset>
 
-          <Button
-            isLoading={isSubmitting}
-            type="submit"
-            disabled={!isFormValid || isSubmitting}
-            className="w-full py-3 sm:py-4 text-base sm:text-lg font-medium"
-          >
-            {isSubmitting ? "저장 중..." : "저장"}
-          </Button>
+          <div className="w-full flex justify-end gap-2">
+            <Button
+              className="w-full py-3 sm:py-4 text-base sm:text-lg font-medium"
+              variant="secondary"
+              onClick={() => router.push("/")}
+            >
+              취소
+            </Button>
+
+            <Button
+              isLoading={isSubmitting}
+              type="submit"
+              disabled={!isFormValid || isSubmitting}
+              className="w-full py-3 sm:py-4 text-base sm:text-lg font-medium"
+            >
+              {isSubmitting ? "저장 중..." : "저장"}
+            </Button>
+          </div>
         </form>
       </div>
     </main>
