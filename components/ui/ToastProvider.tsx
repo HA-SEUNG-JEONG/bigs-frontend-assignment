@@ -54,7 +54,7 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
 export const useToast = () => {
   const context = useContext(ToastContext);
   if (context === undefined) {
-    throw new Error("useToast must be used within a ToastProvider");
+    throw new Error("useToast는 ToastProvider 내에서만 사용할 수 있습니다.");
   }
   return context;
 };
