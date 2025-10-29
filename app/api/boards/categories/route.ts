@@ -12,16 +12,16 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // 외부 API로 카테고리 목록 조회 요청
-    const externalApiUrl =
-      process.env.NEXT_PUBLIC_API_URL || "https://front-mission.bigs.or.kr";
-    const response = await fetch(`${externalApiUrl}/boards/categories`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json"
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/boards/categories`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json"
+        }
       }
-    });
+    );
 
     if (response.ok) {
       const data = await response.json();
