@@ -2,19 +2,15 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { UserInfo } from "@/hooks/useUserInfo";
+import { useUserInfo } from "@/hooks/useUserInfo";
 import { Button } from "../ui/Button";
 import { ConfirmModal } from "../ui/ConfirmModal";
 import { useToast } from "../ui/ToastProvider";
 
-interface HeaderProps {
-  userInfo: UserInfo;
-  isLoadingUser: boolean;
-}
-
-export function Header({ userInfo, isLoadingUser }: HeaderProps) {
+export function Header() {
   const router = useRouter();
   const { addToast } = useToast();
+  const { userInfo, isLoadingUser } = useUserInfo();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const handleLogoutClick = () => {

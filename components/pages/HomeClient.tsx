@@ -13,10 +13,7 @@ export default function HomeClient() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {/* 헤더 */}
-      <Header
-        userInfo={userInfo}
-        isLoadingUser={isLoadingUser}
-      />
+      <Header />
 
       {/* 메인 콘텐츠 */}
       <main className="max-w-7xl mx-auto py-4 sm:py-6 px-4 sm:px-6 lg:px-8">
