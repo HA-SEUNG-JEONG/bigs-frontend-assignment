@@ -1,18 +1,16 @@
 "use client";
 
-import { Button } from "@/components/ui/Button";
+import { UserInfo } from "@/hooks/useUserInfo";
 
 interface HeaderProps {
-  userName: string;
+  userInfo: UserInfo;
   isLoadingUser: boolean;
-  isLoggingOut: boolean;
   onLogoutClick: () => void;
 }
 
 export function Header({
-  userName,
+  userInfo,
   isLoadingUser,
-  isLoggingOut,
   onLogoutClick
 }: HeaderProps) {
   return (
@@ -27,22 +25,35 @@ export function Header({
             </div>
           </div>
           <div className="flex items-center space-x-2 sm:space-x-4">
-            {!isLoadingUser && userName && (
-              <span className="hidden sm:inline text-sm text-gray-600 font-medium">
-                안녕하세요, {userName}님
-              </span>
+            {!isLoadingUser && userInfo.name && (
+              <div className="hidden sm:flex flex-col items-end">
+                <span className="text-sm text-gray-600 font-medium">
+                  안녕하세요, {userInfo.name}님
+                </span>
+                {userInfo.username && (
+                  <span className="text-xs text-gray-500">
+                    {userInfo.username}
+                  </span>
+                )}
+              </div>
             )}
-            {!isLoadingUser && userName && (
-              <span className="sm:hidden text-xs text-gray-600 font-medium">
-                {userName}님
-              </span>
+            {!isLoadingUser && userInfo.name && (
+              <div className="sm:hidden flex flex-col items-end">
+                <span className="text-xs text-gray-600 font-medium">
+                  {userInfo.name}님
+                </span>
+                {userInfo.username && (
+                  <span className="text-xs text-gray-500">
+                    {userInfo.username}
+                  </span>
+                )}
+              </div>
             )}
             <button
               onClick={onLogoutClick}
-              disabled={isLoggingOut}
-              className="px-3 py-2 sm:px-4 text-xs sm:text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-3 py-2 sm:px-4 text-xs sm:text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
             >
-              {isLoggingOut ? "로그아웃 중..." : "로그아웃"}
+              로그아웃
             </button>
           </div>
         </div>

@@ -2,14 +2,17 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Board, BoardListResponse } from "@/lib/types/board";
 
-interface UserInfo {
+export interface UserInfo {
   name: string;
+  username: string;
 }
 
 export function useUserInfo() {
-  const [userName, setUserName] = useState<string>("");
+  const [userInfo, setUserInfo] = useState<UserInfo>({
+    name: "",
+    username: ""
+  });
   const [isLoadingUser, setIsLoadingUser] = useState(true);
   const router = useRouter();
 
@@ -19,8 +22,11 @@ export function useUserInfo() {
       const res = await fetch("/api/auth/me");
 
       if (res.ok) {
-        const userInfo: UserInfo = await res.json();
-        setUserName(userInfo.name || "사용자");
+        const { name, username }: UserInfo = await res.json();
+        setUserInfo({
+          name,
+          username
+        });
       } else {
         // 401 에러인 경우 로그인 페이지로 리다이렉트
         if (res.status === 401) {
@@ -39,7 +45,7 @@ export function useUserInfo() {
   }, []);
 
   return {
-    userName,
+    userInfo,
     isLoadingUser,
     refetchUserInfo: fetchUserInfo
   };
