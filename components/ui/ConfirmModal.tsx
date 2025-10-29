@@ -49,8 +49,9 @@ export const ConfirmModal = ({
                 {cancelText}
               </Button>
               <Button
+                variant="danger"
                 onClick={onConfirm}
-                className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white"
+                className="px-4 py-2"
               >
                 {confirmText}
               </Button>

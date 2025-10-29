@@ -6,7 +6,7 @@ import { Toast } from "./Toast";
 export interface ToastItem {
   id: string;
   message: string;
-  type: "success" | "error" | "info" | "warning";
+  type: "success" | "error";
   duration?: number;
 }
 
