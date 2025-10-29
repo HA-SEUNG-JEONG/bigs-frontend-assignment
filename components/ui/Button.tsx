@@ -7,7 +7,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
 }
 
-export const Button: React.FC<ButtonProps> = ({
+export const Button = ({
   variant = "primary",
   size = "md",
   isLoading = false,
@@ -15,7 +15,7 @@ export const Button: React.FC<ButtonProps> = ({
   className = "",
   disabled,
   ...props
-}) => {
+}: ButtonProps) => {
   const baseClasses =
     "font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors flex items-center justify-center";
 

@@ -5,12 +5,12 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   error?: string;
 }
 
-export const Input: React.FC<InputProps> = ({
+export const Input = ({
   label,
   error,
   className = "",
   ...props
-}) => {
+}: InputProps) => {
   const [showPassword, setShowPassword] = useState(false);
   const isPasswordField = props.type === "password";
   const inputType = isPasswordField && showPassword ? "text" : props.type;

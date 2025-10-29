@@ -5,7 +5,7 @@ interface AlertProps {
   message: string;
 }
 
-export const Alert: React.FC<AlertProps> = ({ type, message }) => {
+export const Alert = ({ type, message }: AlertProps) => {
   const isError = type === "error";
 
   return (
