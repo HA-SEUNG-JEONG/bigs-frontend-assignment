@@ -1,24 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
-const decodeToken = (token: string) => {
-  try {
-    const parts = token.split(".");
-    if (parts.length !== 3) {
-      return null;
-    }
-
-    const base64Url = parts[1];
-    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-
-    // 패딩 추가
-    const padded = base64 + "=".repeat((4 - (base64.length % 4)) % 4);
-
-    const jsonPayload = Buffer.from(padded, "base64").toString("utf8");
-    return JSON.parse(jsonPayload);
-  } catch (error) {
-    return null;
-  }
-};
+import { decodeTokenServer } from "@/lib/utils/auth";
 
 /**
  * 현재 로그인한 사용자의 정보를 반환합니다.
@@ -36,7 +17,7 @@ export async function GET(request: NextRequest) {
     }
 
     // JWT 토큰 디코딩하여 사용자 정보 추출
-    const decoded = decodeToken(accessToken);
+    const decoded = decodeTokenServer(accessToken);
 
     if (!decoded) {
       return NextResponse.json(

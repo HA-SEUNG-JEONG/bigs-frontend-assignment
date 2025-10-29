@@ -1,44 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-
-/**
- * JWT 토큰을 디코딩하여 payload를 반환합니다. (서버 사이드용)
- */
-const decodeToken = (token: string) => {
-  try {
-    const parts = token.split(".");
-    if (parts.length !== 3) {
-      return null;
-    }
-
-    const base64Url = parts[1];
-    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-
-    // 패딩 추가
-    const padded = base64 + "=".repeat((4 - (base64.length % 4)) % 4);
-
-    const jsonPayload = Buffer.from(padded, "base64").toString("utf8");
-    return JSON.parse(jsonPayload);
-  } catch (error) {
-    return null;
-  }
-};
-
-/**
- * JWT 토큰이 만료되었는지 확인합니다. (서버 사이드용)
- */
-const isTokenExpired = (token: string): boolean => {
-  const decoded = decodeToken(token);
-  if (!decoded || !decoded.exp) {
-    return true;
-  }
-
-  // 현재 시간보다 30초 전에 만료되는 경우도 만료로 간주 (여유 시간)
-  const currentTime = Math.floor(Date.now() / 1000);
-  const bufferTime = 30; // 30초
-
-  return decoded.exp <= currentTime + bufferTime;
-};
+import { isTokenExpiredServer } from "@/lib/utils/auth";
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -49,7 +11,7 @@ export async function middleware(request: NextRequest) {
 
   // 토큰이 만료되었는지 확인 (갱신 시도 여부 결정용)
   const isTokenInvalid =
-    !accessToken || (accessToken && isTokenExpired(accessToken));
+    !accessToken || (accessToken && isTokenExpiredServer(accessToken));
 
   // 보호된 경로들 (인증이 필요한 경로)
   const protectedPaths = ["/"];
